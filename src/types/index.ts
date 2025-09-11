@@ -1,11 +1,13 @@
 export interface User {
-  id: string;
+  id: number;  // Changed from string to number to match backend
   email: string;
-  fullName: string;
+  name: string;  // Changed from fullName to name to match backend
   phoneNumber?: string;
-  avatar?: string;
-  isVerified: boolean;
+  nationality?: string;
+  preferredLanguage?: string;
   createdAt: string;
+  lastLoginAt?: string;
+  isActive: boolean;
 }
 
 export interface Location {

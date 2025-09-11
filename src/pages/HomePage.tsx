@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Hero from '../components/Hero';
+import ConnectionTest from '../components/ConnectionTest';
 import { Star, MapPin, Users, Clock, ArrowRight } from 'lucide-react';
 import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap';
 import type { Location, Category } from '../types';
@@ -81,6 +83,13 @@ const HomePage: React.FC = () => {
     <div className="min-vh-100 bg-light">
       <Hero />
 
+      {/* Development: Backend Connection Test */}
+      <section className="py-3 bg-light">
+        <Container>
+          <ConnectionTest />
+        </Container>
+      </section>
+
       {/* Categories Section */}
       <section className="py-5 bg-white">
         <Container>
@@ -124,10 +133,12 @@ const HomePage: React.FC = () => {
               </p>
             </Col>
             <Col xs="auto">
-              <Button variant="outline-primary" className="d-flex align-items-center">
-                View All
-                <ArrowRight size={16} className="ms-2" />
-              </Button>
+              <Link to="/destinations">
+                <Button variant="outline-primary" className="d-flex align-items-center">
+                  View All
+                  <ArrowRight size={16} className="ms-2" />
+                </Button>
+              </Link>
             </Col>
           </Row>
 
@@ -240,12 +251,16 @@ const HomePage: React.FC = () => {
                 Join thousands of travelers who have discovered authentic Vietnam with SmartTravel
               </p>
               <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center">
-                <Button size="lg" className="bg-white text-primary fw-semibold border-0">
-                  Sign Up for Free
-                </Button>
-                <Button variant="outline-light" size="lg" className="fw-semibold">
-                  Learn More
-                </Button>
+                <Link to="/register">
+                  <Button size="lg" className="bg-white text-primary fw-semibold border-0">
+                    Sign Up for Free
+                  </Button>
+                </Link>
+                <Link to="/about">
+                  <Button variant="outline-light" size="lg" className="fw-semibold">
+                    Learn More
+                  </Button>
+                </Link>
               </div>
             </Col>
           </Row>
