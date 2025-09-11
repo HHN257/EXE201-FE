@@ -54,6 +54,106 @@ export interface AuthResponse {
   user?: User;
 }
 
+export interface CurrencyRate {
+  fromCurrency: string;
+  toCurrency: string;
+  rate: number;
+  lastUpdated: string;
+}
+
+export interface ConversionRequest {
+  from: string;
+  to: string;
+  amount: number;
+  useRealTime?: boolean;
+}
+
+export interface BatchConvertItem {
+  from: string;
+  to: string;
+  amount: number;
+  useRealTime?: boolean;
+}
+
+export interface ConversionResult {
+  from: string;
+  to: string;
+  amount: number;
+  result: number;
+  realTime: boolean;
+}
+
+export interface TourGuideDto {
+  id: number;
+  name: string;
+  bio?: string;
+  languages?: string;
+  specializations?: string;
+  hourlyRate?: number;
+  currency?: string;
+  rating?: number;
+  totalReviews: number;
+  profileImage?: string;
+  isVerified: boolean;
+}
+
+export interface CreateTourGuideDto {
+  name: string;
+  bio?: string;
+  phoneNumber?: string;
+  email?: string;
+  languages?: string;
+  specializations?: string;
+  hourlyRate?: number;
+  currency?: string;
+  profileImage?: string;
+  isVerified?: boolean;
+  isActive?: boolean;
+}
+
+export interface TourGuideBookingDto {
+  id: number;
+  startDate: string;
+  endDate: string;
+  notes?: string;
+  totalPrice: number;
+  currency?: string;
+  location?: string;
+  status: string;
+  createdAt: string;
+  updatedAt?: string;
+  tourGuideId: number;
+  tourGuideName: string;
+  userId: number;
+  userName: string;
+}
+
+export interface CreateTourGuideBookingDto {
+  tourGuideId: number;
+  startDate: string;
+  endDate: string;
+  notes?: string;
+  location?: string;
+}
+
+export interface TourGuideReviewDto {
+  id: number;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+  isVerified: boolean;
+  tourGuideId: number;
+  tourGuideName: string;
+  userId: number;
+  userName: string;
+}
+
+export interface CreateTourGuideReviewDto {
+  tourGuideId: number;
+  rating: number;
+  comment?: string;
+}
+
 export const apiService = {
   // Authentication
   login: async (credentials: LoginRequest): Promise<{ user: User; token: string }> => {
@@ -125,4 +225,80 @@ export const apiService = {
   
   getTourGuideReviews: (guideId: string) =>
     api.get(`/tourguides/${guideId}/reviews`).then(res => res.data),
+};
+
+// Currency service
+export const currencyService = {
+  // Get currency rates
+  getRates: (useRealTime = false, baseCurrency = 'USD', symbols?: string): Promise<CurrencyRate[]> =>
+    api.get('/currency/rates', { 
+      params: { useRealTime, baseCurrency, symbols } 
+    }).then(res => res.data),
+
+  // Convert single currency
+  convert: (from: string, to: string, amount: number, useRealTime = false): Promise<number> =>
+    api.get('/currency/convert', { 
+      params: { from, to, amount, useRealTime } 
+    }).then(res => res.data),
+
+  // Batch convert multiple currencies
+  batchConvert: (items: BatchConvertItem[]): Promise<ConversionResult[]> =>
+    api.post('/currency/convert/batch', items).then(res => res.data),
+};
+
+// Tour Guide service
+export const tourGuideService = {
+  // Get all tour guides
+  getAll: (): Promise<TourGuideDto[]> =>
+    api.get('/tourguides').then(res => res.data),
+
+  // Get tour guide by ID
+  getById: (id: number): Promise<TourGuideDto> =>
+    api.get(`/tourguides/${id}`).then(res => res.data),
+
+  // Create tour guide
+  create: (data: CreateTourGuideDto): Promise<TourGuideDto> =>
+    api.post('/tourguides', data).then(res => res.data),
+
+  // Get tour guide reviews
+  getReviews: (id: number): Promise<TourGuideReviewDto[]> =>
+    api.get(`/tourguides/${id}/reviews`).then(res => res.data),
+};
+
+// Tour Guide Booking service
+export const tourGuideBookingService = {
+  // Get user's bookings
+  getAll: (): Promise<TourGuideBookingDto[]> =>
+    api.get('/tourguidebookings').then(res => res.data),
+
+  // Get booking by ID
+  getById: (id: number): Promise<TourGuideBookingDto> =>
+    api.get(`/tourguidebookings/${id}`).then(res => res.data),
+
+  // Create new booking
+  create: (data: CreateTourGuideBookingDto): Promise<TourGuideBookingDto> =>
+    api.post('/tourguidebookings', data).then(res => res.data),
+
+  // Get bookings for a tour guide
+  getByTourGuide: (tourGuideId: number): Promise<TourGuideBookingDto[]> =>
+    api.get(`/tourguidebookings/tourguide/${tourGuideId}`).then(res => res.data),
+};
+
+// Tour Guide Review service
+export const tourGuideReviewService = {
+  // Get all reviews
+  getAll: (): Promise<TourGuideReviewDto[]> =>
+    api.get('/tourguidereviews').then(res => res.data),
+
+  // Get review by ID
+  getById: (id: number): Promise<TourGuideReviewDto> =>
+    api.get(`/tourguidereviews/${id}`).then(res => res.data),
+
+  // Create review
+  create: (data: CreateTourGuideReviewDto): Promise<TourGuideReviewDto> =>
+    api.post('/tourguidereviews', data).then(res => res.data),
+
+  // Get reviews for a tour guide
+  getByTourGuide: (tourGuideId: number): Promise<TourGuideReviewDto[]> =>
+    api.get(`/tourguidereviews/tourguide/${tourGuideId}`).then(res => res.data),
 };

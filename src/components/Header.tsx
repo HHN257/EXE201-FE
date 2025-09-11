@@ -29,6 +29,7 @@ const Header: React.FC = () => {
             <Nav.Link as={Link} to="/destinations" className="text-dark">Destinations</Nav.Link>
             <Nav.Link as={Link} to="/services" className="text-dark">Services</Nav.Link>
             <Nav.Link as={Link} to="/tour-guides" className="text-dark">Tour Guides</Nav.Link>
+            <Nav.Link as={Link} to="/currency" className="text-dark">Currency</Nav.Link>
             <Nav.Link as={Link} to="/about" className="text-dark">About</Nav.Link>
           </Nav>
 
@@ -59,7 +60,7 @@ const Header: React.FC = () => {
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                   <Dropdown.Item>Profile</Dropdown.Item>
-                  <Dropdown.Item>My Bookings</Dropdown.Item>
+                  <Dropdown.Item as={Link} to="/bookings">My Bookings</Dropdown.Item>
                   <Dropdown.Divider />
                   <Dropdown.Item onClick={handleLogout}>
                     <LogOut size={16} className="me-2" />

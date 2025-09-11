@@ -7,6 +7,9 @@ import HomePage from './pages/HomePage';
 import ServicesPage from './pages/ServicesPage';
 import DestinationsPage from './pages/DestinationsPage';
 import TourGuidesPage from './pages/TourGuidesPage';
+import TourGuideDetailPage from './pages/TourGuideDetailPage';
+import BookingsPage from './pages/BookingsPage';
+import CurrencyPage from './pages/CurrencyPage';
 import AboutPage from './pages/AboutPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -28,6 +31,9 @@ function App() {
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/destinations" element={<DestinationsPage />} />
         <Route path="/tour-guides" element={<TourGuidesPage />} />
+        <Route path="/tour-guides/:id" element={<TourGuideDetailPage />} />
+        <Route path="/bookings" element={<BookingsPage />} />
+        <Route path="/currency" element={<CurrencyPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route 
           path="/login" 
