@@ -20,8 +20,8 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
-      await login(email, password);
-      navigate('/');
+      const { redirectTo } = await login(email, password);
+      navigate(redirectTo);
     } catch {
       setError('Invalid email or password. Please try again.');
     } finally {

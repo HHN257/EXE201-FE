@@ -133,7 +133,7 @@ const RegisterPage = () => {
     setIsLoading(true);
 
     try {
-      await register({
+      const { redirectTo } = await register({
         name: formData.name,
         email: formData.email,
         phoneNumber: formData.phoneNumber,
@@ -142,7 +142,7 @@ const RegisterPage = () => {
         password: formData.password,
         confirmPassword: formData.confirmPassword
       });
-      navigate('/');
+      navigate(redirectTo);
     } catch (err) {
       let errorMessage = 'Registration failed. Please try again.';
       if (err && typeof err === 'object' && 'response' in err) {

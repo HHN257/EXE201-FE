@@ -10,9 +10,10 @@ interface AuthState {
 }
 
 interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<void>;
-  register: (userData: RegisterData) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ redirectTo: string }>;
+  register: (userData: RegisterData) => Promise<{ redirectTo: string }>;
   logout: () => void;
+  getRoleBasedDashboard: () => string;
 }
 
 interface RegisterData {
@@ -95,12 +96,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (token) {
         try {
           // Try to validate token with backend and get fresh user data
+          if (import.meta.env.DEV) {
+            console.log('Validating token and fetching fresh user data...');
+          }
           const user = await apiService.getCurrentUser();
-          localStorage.setItem('user', JSON.stringify(user)); // Update stored user data
-          dispatch({ 
-            type: 'RESTORE_SESSION', 
-            payload: { user, token } 
-          });
+          if (import.meta.env.DEV) {
+            console.log('Fresh user data from API:', user);
+          }
+          
+          // Validate the user data structure from API
+          if (user && typeof user === 'object' && user.id && user.email && user.role) {
+            localStorage.setItem('user', JSON.stringify(user)); // Update stored user data
+            dispatch({ 
+              type: 'RESTORE_SESSION', 
+              payload: { user, token } 
+            });
+          } else {
+            // Fallback: if role is missing, try to preserve from cached data
+            const cachedUserStr = localStorage.getItem('user');
+            if (!user.role && cachedUserStr) {
+              try {
+                const cachedUser = JSON.parse(cachedUserStr);
+                if (cachedUser?.role) {
+                  console.warn('API missing role, preserving cached role:', cachedUser.role);
+                  user.role = cachedUser.role;
+                  localStorage.setItem('user', JSON.stringify(user));
+                  dispatch({ 
+                    type: 'RESTORE_SESSION', 
+                    payload: { user, token } 
+                  });
+                  return;
+                }
+              } catch {
+                console.warn('Failed to parse cached user data for role fallback');
+              }
+            }
+            
+            console.error('Invalid user data structure from API:', user);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            dispatch({ type: 'LOGIN_FAILURE' });
+          }
         } catch (error) {
           // Check if it's a network error vs auth error
           const axiosError = error as { response?: { status: number } };
@@ -113,13 +149,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Network error but we have stored user data - use it as fallback
             try {
               const user = JSON.parse(storedUser);
-              console.warn('Using cached user data due to network error');
-              dispatch({ 
-                type: 'RESTORE_SESSION', 
-                payload: { user, token } 
-              });
-            } catch {
+              
+              // Validate user data structure
+              if (user && typeof user === 'object' && user.id && user.email && user.role) {
+                if (import.meta.env.DEV) {
+                  console.warn('Using cached user data due to network error. User role:', user.role);
+                  console.warn('Cached user data:', user);
+                }
+                dispatch({ 
+                  type: 'RESTORE_SESSION', 
+                  payload: { user, token } 
+                });
+              } else {
+                console.error('Invalid cached user data structure (missing role):', user);
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                dispatch({ type: 'LOGIN_FAILURE' });
+              }
+            } catch (parseError) {
               // Corrupted user data
+              console.error('Failed to parse cached user data:', parseError);
               localStorage.removeItem('token');
               localStorage.removeItem('user');
               dispatch({ type: 'LOGIN_FAILURE' });
@@ -142,9 +191,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch({ type: 'LOGIN_START' });
     try {
       const data = await apiService.login({ email, password });
+      
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user)); // Store user data as backup
       dispatch({ type: 'LOGIN_SUCCESS', payload: data });
+      
+      // Return role-based redirect
+      const redirectTo = getRoleBasedDashboard(data.user.role);
+      return { redirectTo };
     } catch (error) {
       dispatch({ type: 'LOGIN_FAILURE' });
       throw error;
@@ -158,9 +212,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user)); // Store user data as backup
       dispatch({ type: 'LOGIN_SUCCESS', payload: data });
+      
+      // Return role-based redirect
+      const redirectTo = getRoleBasedDashboard(data.user.role);
+      return { redirectTo };
     } catch (error) {
       dispatch({ type: 'LOGIN_FAILURE' });
       throw error;
+    }
+  };
+
+  const getRoleBasedDashboard = (role?: string) => {
+    // Always prioritize the passed role parameter first
+    const userRole = role || state.user?.role || 'user';
+    switch (userRole.toLowerCase()) {
+      case 'admin':
+        return '/admin/dashboard';
+      case 'staff':
+        return '/staff/dashboard';
+      case 'tourguide':
+        return '/guide/dashboard';
+      case 'user':
+      default:
+        return '/dashboard';
     }
   };
 
@@ -171,7 +245,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout }}>
+    <AuthContext.Provider value={{ ...state, login, register, logout, getRoleBasedDashboard }}>
       {children}
     </AuthContext.Provider>
   );

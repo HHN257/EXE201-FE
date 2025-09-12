@@ -1,17 +1,44 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Globe, User, LogOut } from 'lucide-react';
-import { Navbar, Nav, Container, Button, Dropdown } from 'react-bootstrap';
+import { Globe, User, LogOut, Settings, Shield, Crown, UserCheck } from 'lucide-react';
+import { Navbar, Nav, Container, Button, Dropdown, Badge } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
+import { getUserDisplayName } from '../utils/roleUtils';
 
 const Header: React.FC = () => {
   const [language, setLanguage] = useState('EN');
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, getRoleBasedDashboard } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role?.toLowerCase()) {
+      case 'admin':
+        return <Crown size={16} className="text-danger" />;
+      case 'staff':
+        return <Shield size={16} className="text-warning" />;
+      case 'tourguide':
+        return <UserCheck size={16} className="text-success" />;
+      default:
+        return <User size={16} />;
+    }
+  };
+
+  const getRoleBadgeColor = (role: string) => {
+    switch (role?.toLowerCase()) {
+      case 'admin':
+        return 'danger';
+      case 'staff':
+        return 'warning';
+      case 'tourguide':
+        return 'success';
+      default:
+        return 'secondary';
+    }
   };
 
   return (
@@ -54,13 +81,22 @@ const Header: React.FC = () => {
               <Dropdown align="end">
                 <Dropdown.Toggle variant="link" className="text-dark text-decoration-none border-0 bg-transparent">
                   <div className="d-flex align-items-center gap-2">
-                    <User size={16} />
-                    <span>{user?.name || 'User'}</span>  {/* Changed from fullName to name */}
+                    {getRoleIcon(user?.role || 'user')}
+                    <span>{user?.name || 'User'}</span>
+                    <Badge bg={getRoleBadgeColor(user?.role || 'user')} className="ms-1">
+                      {getUserDisplayName(user?.role || 'user')}
+                    </Badge>
                   </div>
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
+                  <Dropdown.Item as={Link} to={getRoleBasedDashboard()}>
+                    <Settings size={16} className="me-2" />
+                    Dashboard
+                  </Dropdown.Item>
                   <Dropdown.Item>Profile</Dropdown.Item>
-                  <Dropdown.Item as={Link} to="/bookings">My Bookings</Dropdown.Item>
+                  {(user?.role?.toLowerCase() === 'user' || user?.role?.toLowerCase() === 'tourguide') && (
+                    <Dropdown.Item as={Link} to="/bookings">My Bookings</Dropdown.Item>
+                  )}
                   <Dropdown.Divider />
                   <Dropdown.Item onClick={handleLogout}>
                     <LogOut size={16} className="me-2" />

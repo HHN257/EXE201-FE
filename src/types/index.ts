@@ -5,6 +5,7 @@ export interface User {
   phoneNumber?: string;
   nationality?: string;
   preferredLanguage?: string;
+  role: string; // User, TourGuide, Staff, Admin
   createdAt: string;
   lastLoginAt?: string;
   isActive: boolean;
@@ -68,4 +69,77 @@ export interface ReviewMedia {
   id: string;
   type: 'image' | 'video';
   url: string;
+}
+
+// Verification Types
+export interface TourGuideVerificationRequest {
+  id: number;
+  tourGuideId?: number; // Make optional for User applications
+  userId?: number; // Add userId for User applications
+  tourGuideName?: string; // Make optional
+  userName?: string; // Add userName for User applications
+  applicantRole: string; // Role of the person applying (User or TourGuide)
+  fullName: string;
+  identityNumber: string;
+  phoneNumber: string;
+  email: string;
+  address?: string;
+  identityCardFrontUrl?: string;
+  identityCardBackUrl?: string;
+  tourGuideLicenseUrl?: string;
+  licenseNumber?: string;
+  issuingAuthority?: string;
+  licenseIssueDate?: string;
+  licenseExpiryDate?: string;
+  additionalDocumentsUrls?: string;
+  experience?: string;
+  languages?: string;
+  specializations?: string;
+  additionalNotes?: string;
+  status: string;
+  adminNotes?: string;
+  reviewedByAdminId?: number;
+  reviewedByAdminName?: string;
+  reviewedAt?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateVerificationRequest {
+  fullName: string;
+  identityNumber: string;
+  phoneNumber: string;
+  email: string;
+  address?: string;
+  identityCardFrontUrl?: string;
+  identityCardBackUrl?: string;
+  tourGuideLicenseUrl?: string;
+  licenseNumber?: string;
+  issuingAuthority?: string;
+  licenseIssueDate?: string;
+  licenseExpiryDate?: string;
+  additionalDocumentsUrls?: string;
+  experience?: string;
+  languages?: string;
+  specializations?: string;
+  additionalNotes?: string;
+}
+
+export interface AdminReviewRequest {
+  status: 'Approved' | 'Rejected' | 'UnderReview';
+  adminNotes?: string;
+  promoteToTourGuide?: boolean; // New field for User -> TourGuide promotion
+}
+
+export interface VerificationStatus {
+  tourGuideId?: number; // Backend returns TourGuideId (with capital T)
+  tourGuideName?: string; // Backend returns TourGuideName
+  isVerified: boolean; // Backend returns IsVerified
+  hasPendingRequest: boolean; // Backend returns HasPendingRequest
+  latestRequestStatus?: string; // Backend returns LatestRequestStatus
+  latestRequestDate?: string; // Backend returns LatestRequestDate
+  canSubmitNewRequest: boolean; // Backend returns CanSubmitNewRequest
+  userId?: number; // For User applications
+  userName?: string; // For User applications
+  userRole?: string; // For User applications
 }

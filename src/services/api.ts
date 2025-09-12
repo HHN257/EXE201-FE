@@ -1,5 +1,15 @@
 import axios from 'axios';
-import type { Location, Service, TourGuide, Category, User } from '../types';
+import type { 
+  Location, 
+  Service, 
+  TourGuide, 
+  Category, 
+  User, 
+  TourGuideVerificationRequest,
+  CreateVerificationRequest,
+  AdminReviewRequest,
+  VerificationStatus
+} from '../types';
 import { config } from '../config';
 
 const API_BASE_URL = config.API_BASE_URL;
@@ -301,4 +311,44 @@ export const tourGuideReviewService = {
   // Get reviews for a tour guide
   getByTourGuide: (tourGuideId: number): Promise<TourGuideReviewDto[]> =>
     api.get(`/tourguidereviews/tourguide/${tourGuideId}`).then(res => res.data),
+};
+
+// Tour Guide Verification service
+export const verificationService = {
+  // Get my verification status (for tour guides)
+  getMyStatus: (): Promise<VerificationStatus> =>
+    api.get('/tourguideverification/my-status').then(res => res.data),
+
+  // Get my verification requests (for tour guides)
+  getMyRequests: (): Promise<TourGuideVerificationRequest[]> =>
+    api.get('/tourguideverification/my-requests').then(res => res.data),
+
+  // Submit verification request (for tour guides)
+  submit: (data: CreateVerificationRequest): Promise<TourGuideVerificationRequest> =>
+    api.post('/tourguideverification', data).then(res => res.data),
+
+  // Update verification request (for tour guides)
+  update: (id: number, data: Partial<CreateVerificationRequest>): Promise<TourGuideVerificationRequest> =>
+    api.put(`/tourguideverification/${id}`, data).then(res => res.data),
+
+  // Delete verification request (for tour guides)
+  delete: (id: number): Promise<void> =>
+    api.delete(`/tourguideverification/${id}`).then(res => res.data),
+
+  // Get verification request by ID
+  getById: (id: number): Promise<TourGuideVerificationRequest> =>
+    api.get(`/tourguideverification/${id}`).then(res => res.data),
+
+  // Admin/Staff endpoints
+  // Get all verification requests (for admin/staff)
+  getAllRequests: (params?: { status?: string; page?: number; pageSize?: number }): Promise<TourGuideVerificationRequest[]> =>
+    api.get('/tourguideverification/admin/all', { params }).then(res => res.data),
+
+  // Review verification request (for admin/staff)
+  review: (id: number, data: AdminReviewRequest): Promise<TourGuideVerificationRequest> =>
+    api.put(`/tourguideverification/admin/${id}/review`, data).then(res => res.data),
+
+  // Verify tour guide directly (for admin/staff)
+  verifyDirectly: (tourGuideId: number, isVerified: boolean): Promise<TourGuide> =>
+    api.put(`/tourguideverification/staff/${tourGuideId}/verify`, { isVerified }).then(res => res.data),
 };
