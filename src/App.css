@@ -1,6 +1,5 @@
 .App {
   min-height: 100vh;
-}
 
 /* Hero Section */
 .hero-section {
@@ -50,6 +49,18 @@
   padding: 0.5rem 1.5rem;
   border-radius: 0.5rem;
   transition: all 0.3s ease;
+}
+
+/* Dashboard Card Hover Effects */
+.hover-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.hover-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
 }
 
 .btn-primary-custom:hover {
