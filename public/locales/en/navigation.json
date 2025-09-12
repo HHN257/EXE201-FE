@@ -1,0 +1,17 @@
+{
+  "smartTravel": "SmartTravel",
+  "destinations": "Destinations",
+  "services": "Services",
+  "tourGuides": "Tour Guides",
+  "currency": "Currency",
+  "about": "About",
+  "signIn": "Sign In",
+  "signUp": "Sign Up",
+  "signOut": "Sign Out",
+  "dashboard": "Dashboard",
+  "profile": "Profile",
+  "myBookings": "My Bookings",
+  "home": "Home",
+  "localServices": "Local Services",
+  "travelApps": "Travel Apps"
+}

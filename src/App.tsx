@@ -4,9 +4,10 @@ import PublicRoute from './components/PublicRoute';
 import ProtectedRoute from './components/ProtectedRoute';
 import RoleBasedRoute from './components/RoleBasedRoute';
 import LoadingSpinner from './components/LoadingSpinner';
+import DeepLinkTester from './components/DeepLinkTester';
 import { useAuth } from './contexts/AuthContext';
 import HomePage from './pages/HomePage';
-import ServicesPage from './pages/ServicesPage';
+import EnhancedServicesPage from './pages/EnhancedServicesPage';
 import DestinationsPage from './pages/DestinationsPage';
 import TourGuidesPage from './pages/TourGuidesPage';
 import TourGuideDetailPage from './pages/TourGuideDetailPage';
@@ -37,13 +38,16 @@ function App() {
       <Header />
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/services" element={<EnhancedServicesPage />} />
         <Route path="/destinations" element={<DestinationsPage />} />
         <Route path="/tour-guides" element={<TourGuidesPage />} />
         <Route path="/tour-guides/:id" element={<TourGuideDetailPage />} />
         <Route path="/bookings" element={<BookingsPage />} />
         <Route path="/currency" element={<CurrencyPage />} />
         <Route path="/about" element={<AboutPage />} />
+        
+        {/* Development Testing Route */}
+        <Route path="/test-deeplinks" element={<DeepLinkTester />} />
         
         {/* Authentication Routes */}
         <Route 
