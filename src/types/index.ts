@@ -143,3 +143,29 @@ export interface VerificationStatus {
   userName?: string; // For User applications
   userRole?: string; // For User applications
 }
+
+// Chatbot Types
+export interface ChatMessage {
+  message: string;
+  context?: string;
+  language?: string;
+}
+
+export interface ChatResponse {
+  response: string;
+  isSuccessful: boolean;
+  errorMessage?: string;
+  timestamp: string;
+  suggestedQuestions?: string[];
+}
+
+export interface ChatConversation {
+  userId: string;
+  messages: ChatHistoryItem[];
+}
+
+export interface ChatHistoryItem {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}

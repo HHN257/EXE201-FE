@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import RoleBasedRoute from './components/RoleBasedRoute';
 import LoadingSpinner from './components/LoadingSpinner';
 import DeepLinkTester from './components/DeepLinkTester';
+import { ChatbotButton } from './components/ChatbotButton';
 import { useAuth } from './contexts/AuthContext';
 import HomePage from './pages/HomePage';
 import EnhancedServicesPage from './pages/EnhancedServicesPage';
@@ -141,6 +142,9 @@ function App() {
           } 
         />
       </Routes>
+      
+      {/* Chatbot floating button - available on all pages */}
+      <ChatbotButton />
     </div>
   );
 }

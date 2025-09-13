@@ -8,7 +8,10 @@ import type {
   TourGuideVerificationRequest,
   CreateVerificationRequest,
   AdminReviewRequest,
-  VerificationStatus
+  VerificationStatus,
+  ChatMessage,
+  ChatResponse,
+  ChatConversation
 } from '../types';
 import { config } from '../config';
 
@@ -351,4 +354,31 @@ export const verificationService = {
   // Verify tour guide directly (for admin/staff)
   verifyDirectly: (tourGuideId: number, isVerified: boolean): Promise<TourGuide> =>
     api.put(`/tourguideverification/staff/${tourGuideId}/verify`, { isVerified }).then(res => res.data),
+};
+
+// Chatbot API
+export const chatbotApi = {
+  // Send a simple message without conversation history
+  sendMessage: (data: ChatMessage): Promise<ChatResponse> =>
+    api.post('/chatbot/message', data).then(res => res.data),
+
+  // Send a message with conversation history
+  sendMessageWithHistory: (data: ChatMessage): Promise<ChatResponse> =>
+    api.post('/chatbot/conversation', data).then(res => res.data),
+
+  // Get conversation history
+  getHistory: (): Promise<ChatConversation> =>
+    api.get('/chatbot/history').then(res => res.data),
+
+  // Clear conversation history
+  clearHistory: (): Promise<{ message: string }> =>
+    api.delete('/chatbot/history').then(res => res.data),
+
+  // Get suggested questions
+  getSuggestedQuestions: (language: string = 'en'): Promise<string[]> =>
+    api.get('/chatbot/suggested-questions', { params: { language } }).then(res => res.data),
+
+  // Health check
+  healthCheck: (): Promise<{ status: string }> =>
+    api.get('/chatbot/health').then(res => res.data),
 };
