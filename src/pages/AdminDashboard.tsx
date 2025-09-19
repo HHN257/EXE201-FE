@@ -16,24 +16,24 @@ const AdminDashboard: React.FC = () => {
       color: 'primary'
     },
     {
-      title: 'Staff Management',
-      description: 'Manage staff accounts and permissions',
+      title: 'Tour Guide Management',
+      description: 'Manage tour guides and verifications',
       icon: <Shield size={24} />,
-      link: '/admin/staff',
+      link: '/admin/tour-guides',
       color: 'success'
+    },
+    {
+      title: 'Bookings Management',
+      description: 'View and manage all bookings',
+      icon: <Database size={24} />,
+      link: '/admin/bookings',
+      color: 'info'
     },
     {
       title: 'System Analytics',
       description: 'Comprehensive system analytics',
       icon: <TrendingUp size={24} />,
       link: '/admin/analytics',
-      color: 'info'
-    },
-    {
-      title: 'Database Management',
-      description: 'Database administration tools',
-      icon: <Database size={24} />,
-      link: '/admin/database',
       color: 'warning'
     },
     {
@@ -136,11 +136,27 @@ const AdminDashboard: React.FC = () => {
                     </Link>
                   </div>
                 </Tab>
+                <Tab eventKey="tourguides" title="Tour Guides">
+                  <div className="text-center py-4">
+                    <p className="text-muted">Tour guide management and verification status.</p>
+                    <Link to="/admin/tour-guides">
+                      <Button variant="success">Manage Tour Guides</Button>
+                    </Link>
+                  </div>
+                </Tab>
+                <Tab eventKey="bookings" title="Bookings">
+                  <div className="text-center py-4">
+                    <p className="text-muted">All bookings and revenue tracking.</p>
+                    <Link to="/admin/bookings">
+                      <Button variant="info">View Bookings</Button>
+                    </Link>
+                  </div>
+                </Tab>
                 <Tab eventKey="performance" title="Performance">
                   <div className="text-center py-4">
                     <p className="text-muted">System performance metrics will be displayed here.</p>
                     <Link to="/admin/analytics">
-                      <Button variant="info">View Analytics</Button>
+                      <Button variant="warning">View Analytics</Button>
                     </Link>
                   </div>
                 </Tab>

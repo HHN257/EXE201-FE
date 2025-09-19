@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { Chatbot } from './Chatbot';
-import { useTranslation } from 'react-i18next';
 
 export const ChatbotButton: React.FC = () => {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
-  const { i18n, t } = useTranslation('chatbot');
 
   const toggleChatbot = () => {
     setIsChatbotOpen(!isChatbotOpen);
@@ -16,7 +14,7 @@ export const ChatbotButton: React.FC = () => {
       <button
         onClick={toggleChatbot}
         className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110 z-40"
-        aria-label={isChatbotOpen ? t('closeChat') : t('openChat')}
+        aria-label={isChatbotOpen ? 'Close Chat' : 'Open Chat'}
       >
         {isChatbotOpen ? (
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -40,7 +38,7 @@ export const ChatbotButton: React.FC = () => {
       <Chatbot
         isOpen={isChatbotOpen}
         onClose={() => setIsChatbotOpen(false)}
-        language={i18n.language}
+        language="en"
       />
     </>
   );

@@ -12,15 +12,39 @@ export interface User {
 }
 
 export interface Location {
-  id: string;
+  id: number;
   name: string;
-  description: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  imageUrl?: string;
-  rating: number;
-  reviewCount: number;
+  address?: string;
+  placeType?: string;
+  rating?: number;
+  userReview?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateLocationDto {
+  name: string;
+  address?: string;
+  placeType?: string;
+  rating?: number;
+  userReview?: string;
+}
+
+export interface UpdateLocationDto {
+  name?: string;
+  address?: string;
+  placeType?: string;
+  rating?: number;
+  userReview?: string;
+}
+
+export interface LocationSearchDto {
+  query?: string;
+  placeType?: string;
+  minRating?: number;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface Service {

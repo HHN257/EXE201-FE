@@ -1,15 +1,24 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, MapPin } from 'lucide-react';
 import { Container, Row, Col, Form, Button, InputGroup } from 'react-bootstrap';
 
 const Hero: React.FC = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState('');
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Implement search functionality
-    console.log('Searching for:', searchQuery, 'in', location);
+    if (searchQuery.trim() || location.trim()) {
+      // Navigate to destinations page with search parameters
+      const searchParams = new URLSearchParams();
+      if (searchQuery.trim()) searchParams.set('search', searchQuery.trim());
+      if (location.trim()) searchParams.set('location', location.trim());
+      navigate(`/destinations?${searchParams.toString()}`);
+    } else {
+      navigate('/destinations');
+    }
   };
 
   return (
@@ -17,7 +26,7 @@ const Hero: React.FC = () => {
       <div className="hero-overlay"></div>
       <div className="hero-bg"></div>
 
-      <Container className="position-relative py-5">
+      <Container className="position-relative py-5" style={{ zIndex: 2 }}>
         <Row className="text-center">
           <Col>
             <h1 className="display-3 fw-bold mb-4">
@@ -30,7 +39,7 @@ const Hero: React.FC = () => {
             </p>
 
             {/* Search Form */}
-            <Form onSubmit={handleSearch} className="mb-5" style={{ maxWidth: '1000px', margin: '0 auto' }}>
+            <Form onSubmit={handleSearch} className="mb-5" style={{ maxWidth: '1000px', margin: '0 auto', zIndex: 3, position: 'relative' }}>
               <div className="bg-white rounded-3 shadow-lg p-4">
                 <Row className="g-3">
                   <Col md={4}>
@@ -79,32 +88,36 @@ const Hero: React.FC = () => {
             </Form>
 
             {/* Quick Action Buttons */}
-            <div className="d-flex flex-wrap justify-content-center gap-3">
+            <div className="d-flex flex-wrap justify-content-center gap-3" style={{ zIndex: 3, position: 'relative' }}>
               <Button 
                 variant="outline-light" 
                 className="rounded-pill px-4 py-2"
-                style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', borderColor: 'rgba(255, 255, 255, 0.3)' }}
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', borderColor: 'rgba(255, 255, 255, 0.3)', zIndex: 4, position: 'relative' }}
+                onClick={() => navigate('/destinations?search=historical')}
               >
                 🏛️ Historical Sites
               </Button>
               <Button 
                 variant="outline-light" 
                 className="rounded-pill px-4 py-2"
-                style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', borderColor: 'rgba(255, 255, 255, 0.3)' }}
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', borderColor: 'rgba(255, 255, 255, 0.3)', zIndex: 4, position: 'relative' }}
+                onClick={() => navigate('/destinations?search=food')}
               >
                 🍜 Local Food
               </Button>
               <Button 
                 variant="outline-light" 
                 className="rounded-pill px-4 py-2"
-                style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', borderColor: 'rgba(255, 255, 255, 0.3)' }}
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', borderColor: 'rgba(255, 255, 255, 0.3)', zIndex: 4, position: 'relative' }}
+                onClick={() => navigate('/destinations?search=beach')}
               >
                 🏖️ Beaches
               </Button>
               <Button 
                 variant="outline-light" 
                 className="rounded-pill px-4 py-2"
-                style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', borderColor: 'rgba(255, 255, 255, 0.3)' }}
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', borderColor: 'rgba(255, 255, 255, 0.3)', zIndex: 4, position: 'relative' }}
+                onClick={() => navigate('/services?search=transportation')}
               >
                 🚗 Transportation
               </Button>

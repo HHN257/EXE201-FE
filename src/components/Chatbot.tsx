@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
 import { chatbotApi } from '../services/api';
 import type { ChatResponse, ChatHistoryItem } from '../types';
 
@@ -10,7 +9,6 @@ interface ChatbotProps {
 }
 
 export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, language = 'en' }) => {
-  const { t } = useTranslation('chatbot');
   const [messages, setMessages] = useState<ChatHistoryItem[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -93,7 +91,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, language = 'e
         // Handle error response
         const errorMessage: ChatHistoryItem = {
           role: 'assistant',
-          content: response.errorMessage || t('noResponse'),
+          content: response.errorMessage || 'No response received',
           timestamp: new Date().toISOString()
         };
         setMessages(prev => [...prev, errorMessage]);
@@ -102,7 +100,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, language = 'e
       console.error('Failed to send message:', error);
       const errorMessage: ChatHistoryItem = {
         role: 'assistant',
-        content: t('errorMessage'),
+        content: 'Sorry, something went wrong. Please try again.',
         timestamp: new Date().toISOString()
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -140,13 +138,13 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, language = 'e
         <div className="flex items-center justify-between p-4 border-b bg-blue-600 text-white rounded-t-lg">
           <div className="flex items-center">
             <div className="w-3 h-3 bg-green-400 rounded-full mr-2"></div>
-            <h3 className="text-lg font-semibold">{t('title')}</h3>
+            <h3 className="text-lg font-semibold">Travel Assistant</h3>
           </div>
           <div className="flex items-center space-x-2">
             <button
               onClick={clearHistory}
               className="text-white hover:text-gray-200 p-1"
-              title={t('clearConversation')}
+              title="Clear Conversation"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -167,7 +165,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, language = 'e
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.length === 0 && showSuggestions && (
             <div className="text-center text-gray-500">
-              <p className="mb-4">{t('welcome')}</p>
+              <p className="mb-4">Hello! I'm your travel assistant. How can I help you plan your trip to Vietnam?</p>
             </div>
           )}
 
@@ -198,7 +196,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, language = 'e
               <div className="bg-gray-100 p-3 rounded-lg rounded-bl-none">
                 <div className="flex items-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                  <span className="text-sm text-gray-600">{t('typing')}</span>
+                  <span className="text-sm text-gray-600">Typing...</span>
                 </div>
               </div>
             </div>
@@ -207,7 +205,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, language = 'e
           {/* Suggested Questions */}
           {showSuggestions && suggestedQuestions.length > 0 && (
             <div className="space-y-2">
-              <p className="text-sm text-gray-600 font-medium">{t('suggestedQuestionsTitle')}</p>
+              <p className="text-sm text-gray-600 font-medium">Try asking:</p>
               {suggestedQuestions.slice(0, 3).map((question, index) => (
                 <button
                   key={index}
@@ -231,7 +229,7 @@ export const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose, language = 'e
               type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder={t('inputPlaceholder')}
+              placeholder="Ask me anything about Vietnam travel..."
               className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isLoading}
             />

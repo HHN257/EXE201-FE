@@ -1,9 +1,20 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Card, Button, Form, InputGroup, Nav, Tab } from 'react-bootstrap';
-import { Search, MapPin, Star, Users, ExternalLink, Smartphone } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { externalServices, handleDeepLink, isMobile } from '../utils/deepLinkUtils';
+import { Container, Row, Col, Card, Button, Form, InputGroup, Badge, Modal, Table } from 'react-bootstrap';
+import { Search, MapPin, Star, ExternalLink, Smartphone, DollarSign } from 'lucide-react';
+import { handleDeepLink, isMobile } from '../utils/deepLinkUtils';
 import './ServicesPage.css';
+
+// Import local images for apps
+import beImage from '../assets/be.jpg';
+import bookingImage from '../assets/Booking.png';
+import busMapImage from '../assets/busmap.png';
+import cgvImage from '../assets/cgv.jpg';
+import grabImage from '../assets/Grab.png';
+import grabFoodImage from '../assets/grabfood.png';
+import klookImage from '../assets/klook.png';
+import lotteImage from '../assets/lotte.jpg';
+import shopeeFoodImage from '../assets/shopeefood.jpg';
+import travelokaImage from '../assets/traveloka.webp';
 
 interface Service {
   id: string;
@@ -15,479 +26,585 @@ interface Service {
   rating: number;
   reviewCount: number;
   imageUrl: string;
+  isApp?: boolean; // New field to distinguish app services
+  deepLinks?: {
+    app: () => string;
+    webFallback: () => string;
+  };
 }
 
+interface PricingInfo {
+  appId: string;
+  appName: string;
+  pricingDetails: {
+    service: string;
+    price: string;
+    description?: string;
+  }[];
+}
+
+const pricingData: PricingInfo[] = [
+  {
+    appId: 'app1',
+    appName: 'Grab App',
+    pricingDetails: [
+      { service: 'GrabBike (2-4km)', price: '$0.8 - $1.4', description: 'HCM/HN area' },
+      { service: 'GrabCar 4 seats (2-4km)', price: '$1.6 - $2.8' },
+      { service: 'GrabCar 7 seats (2-4km)', price: '$2.4 - $3.6' },
+      { service: 'Long distance (10km)', price: '$4.8 - $7.2', description: 'GrabCar 4 seats' }
+    ]
+  },
+  {
+    appId: 'app2',
+    appName: 'GrabFood App',
+    pricingDetails: [
+      { service: 'Local dishes (nearby)', price: '$1.6 - $2.8', description: 'Simple orders' },
+      { service: 'Average meal', price: '$4 - $6', description: 'Mid-range restaurants' },
+      { service: 'Western food (far distance)', price: '$8 - $12', description: 'Premium + delivery fees' }
+    ]
+  },
+  {
+    appId: 'app3',
+    appName: 'Booking.com App',
+    pricingDetails: [
+      { service: '3-star hotel (Ho Chi Minh)', price: '$30 - $40', description: 'Per night' },
+      { service: '3-star hotel (Da Nang)', price: '$28', description: 'Per night' },
+      { service: '4-star hotel (Ho Chi Minh)', price: '$83', description: 'Per night' },
+      { service: '4-star hotel (Da Nang)', price: '$54', description: 'Per night' }
+    ]
+  },
+  {
+    appId: 'app4',
+    appName: 'Traveloka App',
+    pricingDetails: [
+      { service: 'Standard hotel (3-4 star)', price: '$30 - $60', description: 'Per night, city center' },
+      { service: 'Premium hotel (good location)', price: '$80 - $150+', description: 'Per night, great views' },
+      { service: 'Domestic flights', price: '$30 - $50', description: 'One way, varies by route & timing' }
+    ]
+  },
+  {
+    appId: 'app5',
+    appName: 'Klook App',
+    pricingDetails: [
+      { service: 'City attractions entry', price: '$5 - $20', description: 'Standard tourist spots' },
+      { service: 'Half-day tours', price: '$20 - $50', description: 'Cable car, outdoor activities' },
+      { service: 'Full-day experiences', price: '$50 - $80+', description: 'Large tourist areas' },
+      { service: 'Klook Pass (multiple activities)', price: '$30 - $100+', description: 'Varies by package & duration' }
+    ]
+  },
+  {
+    appId: 'app6',
+    appName: 'CGV App',
+    pricingDetails: [
+      { service: 'Weekday standard', price: '$2.80', description: 'Regular showings' },
+      { service: 'Average ticket', price: '$3.40', description: 'Standard pricing' },
+      { service: 'Weekend/holidays', price: '$4.80', description: 'Peak times' }
+    ]
+  },
+  {
+    appId: 'app7',
+    appName: 'BE App',
+    pricingDetails: [
+      { service: 'beCar 7 seats', price: '$1.30', description: 'Starting fee' },
+      { service: 'beTaxi 4 seats', price: '$1.30', description: 'Starting fee' },
+      { service: 'beDelivery minimum', price: '$0.60', description: 'Base delivery fee' }
+    ]
+  },
+  {
+    appId: 'app8',
+    appName: 'ShopeeFood App',
+    pricingDetails: [
+      { service: 'Small order (simple food)', price: '$2.0 - $3.2', description: 'Including delivery fees' },
+      { service: 'Average order', price: '$6.0 - $10.0', description: 'Main dish + sides + delivery' },
+      { service: 'Large order (premium/far)', price: '$12.0 - $16.0', description: 'Multiple items or distant restaurants' }
+    ]
+  },
+  {
+    appId: 'app9',
+    appName: 'Bus Map App',
+    pricingDetails: [
+      { service: 'City bus (subsidized)', price: '$0.20 - $0.40', description: 'Local routes by distance' },
+      { service: 'Medium distance (5-7 hours)', price: '$8 - $15', description: 'Inter-city buses' },
+      { service: 'Long distance (HN-HCM)', price: '$25 - $40+', description: 'Sleeper buses, premium quality' }
+    ]
+  },
+  {
+    appId: 'app10',
+    appName: 'Lotte Cinema App',
+    pricingDetails: [
+      { service: '2D standard (weekdays)', price: '$2.6 - $4.0', description: 'Mon-Thu, adults' },
+      { service: '2D weekend/holidays', price: '$2.8 - $4.8', description: 'Peak times' },
+      { service: 'Student/U22 discount', price: '$1.8 - $3.2', description: 'Special rates' },
+      { service: '3D standard (weekdays)', price: '$3.4 - $5.2', description: 'Mon-Thu, adults' },
+      { service: '3D weekend/holidays', price: '$4.2 - $6.8', description: 'Peak times' }
+    ]
+  }
+];
+
 const EnhancedServicesPage: React.FC = () => {
-  const { t } = useTranslation(['services', 'common', 'navigation']);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [activeTab, setActiveTab] = useState('local');
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [selectedAppPricing, setSelectedAppPricing] = useState<PricingInfo | null>(null);
 
-  // Mock data for local services
+  const handleShowPricing = (appId: string) => {
+    const pricingInfo = pricingData.find(p => p.appId === appId);
+    if (pricingInfo) {
+      setSelectedAppPricing(pricingInfo);
+      setShowPricingModal(true);
+    }
+  };
+
+  // Updated categories for app services only
   const categories = [
-    t('services:categories.allServices'),
-    t('services:categories.transportation'),
-    t('services:categories.accommodation'),
-    t('services:categories.foodDining'),
-    t('services:categories.activities'),
-    t('services:categories.shopping')
+    'All Apps',
+    'Transportation',
+    'Food & Dining',
+    'Travel & Booking',
+    'Entertainment',
+    'Utilities'
   ];
 
-  const localServices: Service[] = [
-    {
-      id: '1',
-      name: 'Saigon Street Food Tour',
-      description: 'Discover the best local street food with our expert guides',
-      category: 'Food & Dining',
-      location: 'Ho Chi Minh City',
-      priceRange: '$20-30',
-      rating: 4.8,
-      reviewCount: 124,
-      imageUrl: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400'
-    },
+  const services: Service[] = [
+    // App Services Only
     {
       id: '2',
-      name: 'Motorbike Rental Service',
-      description: 'Rent quality motorbikes to explore the city at your own pace',
+      name: 'Grab Transportation',
+      description: 'Convenient ride-hailing service for all your transportation needs',
       category: 'Transportation',
-      location: 'Ho Chi Minh City',
-      priceRange: '$5-10/day',
+      location: 'Nationwide',
+      priceRange: '$2-20',
       rating: 4.6,
-      reviewCount: 89,
-      imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400'
+      reviewCount: 5420,
+      imageUrl: grabImage
     },
     {
       id: '3',
-      name: 'Traditional Cooking Class',
-      description: 'Learn to cook authentic Vietnamese dishes',
-      category: 'Activities',
-      location: 'Hanoi',
-      priceRange: '$25-35',
-      rating: 4.9,
-      reviewCount: 156,
-      imageUrl: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400'
+      name: 'GrabFood Delivery',
+      description: 'Food delivery from your favorite restaurants',
+      category: 'Food & Dining',
+      location: 'Major Cities',
+      priceRange: '$3-25',
+      rating: 4.7,
+      reviewCount: 3280,
+      imageUrl: grabFoodImage
     },
     {
       id: '4',
-      name: 'Local Market Shopping Tour',
-      description: 'Navigate local markets with insider knowledge',
-      category: 'Shopping',
-      location: 'Hoi An',
-      priceRange: '$15-25',
+      name: 'Booking.com Hotels',
+      description: 'Find and book the perfect accommodation for your stay',
+      category: 'Accommodation',
+      location: 'Worldwide',
+      priceRange: '$15-200',
+      rating: 4.4,
+      reviewCount: 8900,
+      imageUrl: bookingImage
+    },
+    {
+      id: '5',
+      name: 'CGV Cinemas',
+      description: 'Premium movie experience with latest blockbusters',
+      category: 'Activities',
+      location: 'Major Cities',
+      priceRange: '$5-12',
+      rating: 4.3,
+      reviewCount: 890,
+      imageUrl: cgvImage
+    },
+    {
+      id: '6',
+      name: 'Futa Bus Lines',
+      description: 'Comfortable long-distance bus travel across Vietnam',
+      category: 'Transportation',
+      location: 'Nationwide',
+      priceRange: '$8-25',
+      rating: 4.2,
+      reviewCount: 670,
+      imageUrl: 'https://via.placeholder.com/300x200?text=Futa+Bus'
+    },
+    {
+      id: '7',
+      name: 'Klook Travel Activities',
+      description: 'Book amazing travel experiences and activities',
+      category: 'Entertainment',
+      location: 'Asia Pacific',
+      priceRange: '$10-100',
+      rating: 4.6,
+      reviewCount: 2340,
+      imageUrl: klookImage
+    },
+    {
+      id: '8',
+      name: 'ShopeeFood Delivery',
+      description: 'Fast food delivery with great deals and promotions',
+      category: 'Food & Dining',
+      location: 'Major Cities',
+      priceRange: '$3-20',
+      rating: 4.4,
+      reviewCount: 2890,
+      imageUrl: shopeeFoodImage
+    },
+    {
+      id: '9',
+      name: 'Traveloka Booking',
+      description: 'Complete travel booking platform for flights and hotels',
+      category: 'Transportation',
+      location: 'Southeast Asia',
+      priceRange: '$20-300',
+      rating: 4.5,
+      reviewCount: 4560,
+      imageUrl: travelokaImage
+    },
+    {
+      id: '10',
+      name: 'Mai Linh Express',
+      description: 'Reliable bus transportation with modern fleet',
+      category: 'Transportation',
+      location: 'Nationwide',
+      priceRange: '$6-22',
+      rating: 4.1,
+      reviewCount: 450,
+      imageUrl: 'https://via.placeholder.com/300x200?text=Mai+Linh'
+    },
+    {
+      id: '11',
+      name: 'Lotte Cinema',
+      description: 'Premium cinema experience with international films',
+      category: 'Activities',
+      location: 'Major Cities',
+      priceRange: '$7-15',
+      rating: 4.4,
+      reviewCount: 1240,
+      imageUrl: 'https://via.placeholder.com/300x200?text=Lotte+Cinema'
+    },
+    // App Services
+    {
+      id: 'app1',
+      name: 'Grab App',
+      description: 'Ride-hailing, food delivery, and more',
+      category: 'Transportation',
+      location: 'Nationwide',
+      priceRange: 'Free',
+      rating: 4.5,
+      reviewCount: 12000,
+      imageUrl: grabImage,
+      isApp: true,
+      deepLinks: {
+        app: () => 'grab://open',
+        webFallback: () => 'https://grab.com',
+      }
+    },
+    {
+      id: 'app2',
+      name: 'GrabFood App',
+      description: 'Food delivery from your favorite restaurants',
+      category: 'Food & Dining',
+      location: 'Major Cities',
+      priceRange: 'Free',
       rating: 4.7,
-      reviewCount: 78,
-      imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400'
+      reviewCount: 8500,
+      imageUrl: grabFoodImage,
+      isApp: true,
+      deepLinks: {
+        app: () => 'grab://food',
+        webFallback: () => 'https://food.grab.com',
+      }
+    },
+    {
+      id: 'app3',
+      name: 'Booking.com App',
+      description: 'Hotel and accommodation booking worldwide',
+      category: 'Travel & Booking',
+      location: 'Worldwide',
+      priceRange: 'Free',
+      rating: 4.4,
+      reviewCount: 15000,
+      imageUrl: bookingImage,
+      isApp: true,
+      deepLinks: {
+        app: () => 'booking://open',
+        webFallback: () => 'https://www.booking.com',
+      }
+    },
+    {
+      id: 'app4',
+      name: 'Traveloka App',
+      description: 'Flights, hotels, and travel packages',
+      category: 'Travel & Booking',
+      location: 'Southeast Asia',
+      priceRange: 'Free',
+      rating: 4.5,
+      reviewCount: 9200,
+      imageUrl: travelokaImage,
+      isApp: true,
+      deepLinks: {
+        app: () => 'traveloka://open',
+        webFallback: () => 'https://www.traveloka.com',
+      }
+    },
+    {
+      id: 'app5',
+      name: 'Klook App',
+      description: 'Activities, tours, and attractions booking',
+      category: 'Travel & Booking',
+      location: 'Asia Pacific',
+      priceRange: 'Free',
+      rating: 4.6,
+      reviewCount: 6800,
+      imageUrl: klookImage,
+      isApp: true,
+      deepLinks: {
+        app: () => 'klook://open',
+        webFallback: () => 'https://www.klook.com',
+      }
+    },
+    {
+      id: 'app6',
+      name: 'CGV App',
+      description: 'Movie tickets and cinema booking',
+      category: 'Entertainment',
+      location: 'Major Cities',
+      priceRange: 'Free',
+      rating: 4.3,
+      reviewCount: 3400,
+      imageUrl: cgvImage,
+      isApp: true,
+      deepLinks: {
+        app: () => 'cgv://open',
+        webFallback: () => 'https://www.cgv.vn',
+      }
+    },
+    {
+      id: 'app7',
+      name: 'BE App',
+      description: 'Food delivery and logistics services',
+      category: 'Transportation',
+      location: 'Vietnam',
+      priceRange: 'Free',
+      rating: 4.2,
+      reviewCount: 2100,
+      imageUrl: beImage,
+      isApp: true,
+      deepLinks: {
+        app: () => 'be://open',
+        webFallback: () => 'https://be.com.vn',
+      }
+    },
+    {
+      id: 'app8',
+      name: 'ShopeeFood App',
+      description: 'Fast food delivery with great deals',
+      category: 'Food & Dining',
+      location: 'Major Cities',
+      priceRange: 'Free',
+      rating: 4.4,
+      reviewCount: 5600,
+      imageUrl: shopeeFoodImage,
+      isApp: true,
+      deepLinks: {
+        app: () => 'shopeefood://open',
+        webFallback: () => 'https://shopeefood.vn',
+      }
+    },
+    {
+      id: 'app9',
+      name: 'Bus Map App',
+      description: 'Public bus routes and schedules',
+      category: 'Utilities',
+      location: 'Vietnam',
+      priceRange: 'Free',
+      rating: 4.1,
+      reviewCount: 890,
+      imageUrl: busMapImage,
+      isApp: true,
+      deepLinks: {
+        app: () => 'busmap://open',
+        webFallback: () => 'https://busmap.vn',
+      }
+    },
+    {
+      id: 'app10',
+      name: 'Lotte Cinema App',
+      description: 'Premium cinema experience with international films',
+      category: 'Entertainment',
+      location: 'Major Cities',
+      priceRange: 'Free',
+      rating: 4.4,
+      reviewCount: 1240,
+      imageUrl: lotteImage,
+      isApp: true,
+      deepLinks: {
+        app: () => 'lottecinema://open',
+        webFallback: () => 'https://www.lottecinemavn.com/LCHS/index.aspx',
+      }
     }
   ];
 
-  const filteredServices = localServices.filter(service => {
+  const filteredServices = services.filter(service => {
+    // Only show app services
+    if (!service.isApp) return false;
+    
     const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         service.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || selectedCategory === t('services:categories.allServices') || 
+                         service.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         service.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !selectedCategory || selectedCategory === 'All Apps' || 
                            service.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleExternalServiceClick = (serviceDeepLinks: Record<string, (...args: any[]) => string>) => {
-    const deepLinkUrl = serviceDeepLinks.app();
-    const fallbackUrl = serviceDeepLinks.webFallback();
-    
-    handleDeepLink(deepLinkUrl, fallbackUrl);
-  };
+  return (
+    <Container className="py-5">
+      {/* Header */}
+      <div className="text-center mb-5">
+        <h1 className="display-4 fw-bold mb-4">Travel Apps</h1>
+        <p className="lead text-muted">
+          Download and connect with popular travel and service apps in Vietnam
+        </p>
+      </div>
 
-  const renderLocalServices = () => (
-    <>
-      {/* Search and Filter Section */}
-      <section className="py-4 bg-light">
-        <Container>
-          <Row className="g-3">
-            <Col md={8}>
-              <InputGroup size="lg">
-                <InputGroup.Text>
-                  <Search size={20} />
-                </InputGroup.Text>
-                <Form.Control
-                  type="text"
-                  placeholder={t('services:searchLocalPlaceholder')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </InputGroup>
-            </Col>
-            <Col md={4}>
-              <Form.Select
-                size="lg"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                {categories.map(category => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </Form.Select>
-            </Col>
-          </Row>
-        </Container>
-      </section>
+      {/* Search and Filter */}
+      <Row className="mb-4">
+        <Col md={8}>
+          <InputGroup>
+            <InputGroup.Text>
+              <Search size={20} />
+            </InputGroup.Text>
+            <Form.Control
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search for services..."
+            />
+          </InputGroup>
+        </Col>
+        <Col md={4}>
+          <Form.Select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </Form.Select>
+        </Col>
+      </Row>
 
-      {/* Local Services Grid */}
-      <section className="py-5">
-        <Container>
-          <Row className="g-4">
-            {filteredServices.map((service) => (
-              <Col key={service.id} md={6} lg={4}>
-                <Card className="h-100 border-0 shadow-sm">
-                  <div className="position-relative overflow-hidden" style={{ height: '200px' }}>
-                    <Card.Img
-                      variant="top"
-                      src={service.imageUrl}
-                      alt={service.name}
-                      className="h-100 w-100 object-fit-cover"
-                      style={{ transition: 'transform 0.3s' }}
-                      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                    />
-                    <div className="position-absolute top-0 end-0 m-3">
-                      <span className="bg-white rounded-pill px-2 py-1 d-flex align-items-center small">
-                        <Star size={14} className="text-warning me-1" fill="currentColor" />
-                        {service.rating}
-                      </span>
-                    </div>
-                  </div>
-                  <Card.Body className="d-flex flex-column">
-                    <div className="mb-2">
-                      <span className="badge bg-primary mb-2">{service.category}</span>
-                      <Card.Title className="h5 fw-semibold">{service.name}</Card.Title>
-                      <Card.Text className="text-muted mb-3">{service.description}</Card.Text>
+      {/* Unified Services Grid */}
+      <Row className="g-4">
+        {filteredServices.length > 0 ? (
+          filteredServices.map((service) => (
+            <Col key={service.id} md={6} lg={4}>
+              <Card className="h-100 shadow-sm">
+                <Card.Img variant="top" src={service.imageUrl} style={{ height: '200px', objectFit: 'cover' }} />
+                <Card.Body className="d-flex flex-column">
+                  <Card.Title className="h5 mb-2">{service.name}</Card.Title>
+                  <Card.Text className="text-muted mb-3">{service.description}</Card.Text>
+                  
+                  <div className="mt-auto">
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                      <div className="d-flex align-items-center">
+                        <Star size={16} className="text-warning me-1" fill="currentColor" />
+                        <span className="fw-semibold">{service.rating}</span>
+                        <span className="text-muted ms-1">({service.reviewCount})</span>
+                      </div>
+                      <Badge bg="secondary">{service.priceRange}</Badge>
                     </div>
                     
-                    <div className="mt-auto">
-                      <div className="d-flex align-items-center text-muted small mb-2">
-                        <MapPin size={14} className="me-1" />
-                        <span>{service.location}</span>
-                      </div>
-                      <div className="d-flex align-items-center text-muted small mb-3">
-                        <Users size={14} className="me-1" />
-                        <span>{service.reviewCount} reviews</span>
-                      </div>
-                      <div className="d-flex justify-content-between align-items-center">
-                        <div className="fw-semibold text-primary">{service.priceRange}</div>
-                        <Button variant="outline-primary" size="sm">
-                          {t('services:actions.viewDetails')}
-                        </Button>
-                      </div>
+                    <div className="d-flex align-items-center text-muted mb-3">
+                      <MapPin size={14} className="me-1" />
+                      <small>{service.location}</small>
                     </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-
-          {filteredServices.length === 0 && (
-            <Row>
-              <Col className="text-center py-5">
-                <h4 className="text-muted">{t('services:descriptions.noResults')}</h4>
-                <p className="text-muted">{t('services:descriptions.noResultsDescription')}</p>
-              </Col>
-            </Row>
-          )}
-        </Container>
-      </section>
-    </>
-  );
-
-  const renderExternalServices = () => {
-    // Group services by category
-    const servicesByCategory = externalServices.reduce((acc, service) => {
-      if (!acc[service.category]) {
-        acc[service.category] = [];
-      }
-      acc[service.category].push(service);
-      return acc;
-    }, {} as Record<string, typeof externalServices>);
-
-    return (
-      <section className="py-5">
-        <Container>
-          <Row className="mb-4">
-            <Col>
-              <h3 className="mb-3">{t('services:descriptions.popularApps')}</h3>
-              <p className="text-muted">
-                {isMobile() 
-                  ? t('services:descriptions.mobileDescription')
-                  : t('services:descriptions.desktopDescription')
-                }
-              </p>
+                    
+                    <div className="d-grid gap-2">
+                      <Button
+                        variant="info"
+                        size="sm"
+                        onClick={() => handleShowPricing(service.id)}
+                        className="d-flex align-items-center justify-content-center"
+                      >
+                        <DollarSign size={16} className="me-2" />
+                        View Pricing
+                      </Button>
+                      {isMobile() ? (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleDeepLink(service.deepLinks!.app(), service.deepLinks!.webFallback())}
+                          className="d-flex align-items-center justify-content-center"
+                        >
+                          <Smartphone size={16} className="me-2" />
+                          Open App
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          href={service.deepLinks!.webFallback()}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="d-flex align-items-center justify-content-center"
+                        >
+                          <ExternalLink size={16} className="me-2" />
+                          Visit Website
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </Card.Body>
+              </Card>
             </Col>
-          </Row>
-          
-          {Object.entries(servicesByCategory).map(([category, services]) => (
-            <div key={category} className="mb-5">
-              <h4 className="mb-3 text-primary">{category}</h4>
-              <Row className="g-4">
-                {services.map((service, index) => (
-                  <Col key={index} md={6} lg={4}>
-                    <Card className="h-100 border-0 shadow-sm hover-card external-service-card">
-                      <Card.Body className="text-center p-4">
-                        <div className="mb-3">
-                          <img 
-                            src={service.logo} 
-                            alt={service.name}
-                            className="service-logo"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        </div>
-                        <Card.Title className="h5 fw-semibold mb-2">{service.name}</Card.Title>
-                        <Card.Text className="text-muted mb-3">{service.description}</Card.Text>
-                        <span className="badge bg-secondary mb-3">{service.category}</span>
-                        
-                        <div className="d-grid gap-2">
-                          <Button 
-                            variant="primary"
-                            onClick={() => handleExternalServiceClick(service.deepLinks)}
-                            className="d-flex align-items-center justify-content-center gap-2"
-                          >
-                            {isMobile() ? (
-                              <>
-                                <Smartphone size={16} />
-                                {t('services:actions.openApp')}
-                              </>
-                            ) : (
-                              <>
-                                <ExternalLink size={16} />
-                                {t('services:actions.visitWebsite')}
-                              </>
-                            )}
-                          </Button>
-                          
-                          {/* Quick action buttons based on service */}
-                          {service.name === 'Grab' && (
-                            <div className="d-flex gap-2">
-                              <Button 
-                                variant="outline-primary" 
-                                size="sm"
-                                onClick={() => handleDeepLink(
-                                  service.deepLinks.ride('Current Location', 'Airport'),
-                                  'https://grab.com'
-                                )}
-                              >
-                                Book Ride
-                              </Button>
-                              <Button 
-                                variant="outline-primary" 
-                                size="sm"
-                                onClick={() => handleDeepLink(
-                                  service.deepLinks.food(),
-                                  'https://grab.com'
-                                )}
-                              >
-                                Order Food
-                              </Button>
-                            </div>
-                          )}
-                          
-                          {service.name === 'Booking.com' && (
-                            <Button 
-                              variant="outline-primary" 
-                              size="sm"
-                              onClick={() => handleDeepLink(
-                                service.deepLinks.hotels('Ho Chi Minh City', '2024-01-01', '2024-01-02'),
-                                'https://www.booking.com'
-                              )}
-                            >
-                              Find Hotels
-                            </Button>
-                          )}
-                          
-                          {service.name === 'Traveloka' && (
-                            <div className="d-flex gap-2">
-                              <Button 
-                                variant="outline-primary" 
-                                size="sm"
-                                onClick={() => handleDeepLink(
-                                  service.deepLinks.flights('SGN', 'HAN', '2024-01-01'),
-                                  'https://www.traveloka.com'
-                                )}
-                              >
-                                Book Flight
-                              </Button>
-                              <Button 
-                                variant="outline-primary" 
-                                size="sm"
-                                onClick={() => handleDeepLink(
-                                  service.deepLinks.hotels('Ho Chi Minh City', '2024-01-01', '2024-01-02'),
-                                  'https://www.traveloka.com'
-                                )}
-                              >
-                                Book Hotel
-                              </Button>
-                            </div>
-                          )}
+          ))
+        ) : (
+          <Col className="text-center py-5">
+            <h4 className="text-muted">No apps found</h4>
+            <p className="text-muted">Try adjusting your search or category filters.</p>
+          </Col>
+        )}
+      </Row>
 
-                          {service.name === 'Klook' && (
-                            <Button 
-                              variant="outline-primary" 
-                              size="sm"
-                              onClick={() => handleDeepLink(
-                                service.deepLinks.activities('Ho Chi Minh City'),
-                                'https://www.klook.com'
-                              )}
-                            >
-                              Find Activities
-                            </Button>
-                          )}
-
-                          {service.name === 'BusMap' && (
-                            <Button 
-                              variant="outline-primary" 
-                              size="sm"
-                              onClick={() => handleDeepLink(
-                                service.deepLinks.route('District 1', 'Airport'),
-                                'https://busmap.vn'
-                              )}
-                            >
-                              Plan Route
-                            </Button>
-                          )}
-
-                          {service.name === 'Be' && (
-                            <Button 
-                              variant="outline-primary" 
-                              size="sm"
-                              onClick={() => handleDeepLink(
-                                service.deepLinks.ride('Current Location', 'Airport'),
-                                'https://be.com.vn'
-                              )}
-                            >
-                              Book Ride
-                            </Button>
-                          )}
-
-                          {service.name === 'XanhSM' && (
-                            <Button 
-                              variant="outline-primary" 
-                              size="sm"
-                              onClick={() => handleDeepLink(
-                                service.deepLinks.ride('Current Location', 'Nearby'),
-                                'https://xanhsm.com'
-                              )}
-                            >
-                              Book XanhSM
-                            </Button>
-                          )}
-
-                          {service.name === 'Futa Bus Lines' && (
-                            <Button 
-                              variant="outline-primary" 
-                              size="sm"
-                              onClick={() => handleDeepLink(
-                                service.deepLinks.booking('Ho Chi Minh City', 'Da Lat', '2024-01-01'),
-                                'https://futabus.vn'
-                              )}
-                            >
-                              Book Bus
-                            </Button>
-                          )}
-
-                          {(service.name === 'GrabFood' || service.name === 'ShopeeFood' || service.name === 'BeFood') && (
-                            <Button 
-                              variant="outline-primary" 
-                              size="sm"
-                              onClick={() => handleDeepLink(
-                                service.deepLinks.restaurant(),
-                                service.deepLinks.webFallback()
-                              )}
-                            >
-                              Order Food
-                            </Button>
-                          )}
-
-                          {(service.name === 'CGV Cinemas' || service.name === 'Lotte Cinema') && (
-                            <div className="d-flex gap-2">
-                              <Button 
-                                variant="outline-primary" 
-                                size="sm"
-                                onClick={() => handleDeepLink(
-                                  service.deepLinks.movies(),
-                                  service.deepLinks.webFallback()
-                                )}
-                              >
-                                Show Movies
-                              </Button>
-                              <Button 
-                                variant="outline-primary" 
-                                size="sm"
-                                onClick={() => handleDeepLink(
-                                  service.deepLinks.booking(),
-                                  service.deepLinks.webFallback()
-                                )}
-                              >
-                                Book Tickets
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
+      {/* Pricing Modal */}
+      <Modal show={showPricingModal} onHide={() => setShowPricingModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <DollarSign className="me-2" />
+            {selectedAppPricing?.appName} - Pricing Information
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedAppPricing && (
+            <Table striped bordered hover responsive>
+              <thead>
+                <tr>
+                  <th>Service</th>
+                  <th>Price Range</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedAppPricing.pricingDetails.map((detail, index) => (
+                  <tr key={index}>
+                    <td className="fw-semibold">{detail.service}</td>
+                    <td className="text-success fw-bold">{detail.price}</td>
+                    <td className="text-muted">{detail.description || '-'}</td>
+                  </tr>
                 ))}
-              </Row>
-            </div>
-          ))}
-        </Container>
-      </section>
-    );
-  };
-
-  return (
-    <div className="min-vh-100">
-      {/* Hero Section */}
-      <section className="bg-primary text-white py-5">
-        <Container>
-          <Row className="text-center">
-            <Col lg={8} className="mx-auto">
-              <h1 className="display-4 fw-bold mb-4">{t('services:title')}</h1>
-              <p className="lead mb-0">
-                {t('services:subtitle')}
-              </p>
-            </Col>
-          </Row>
-        </Container>
-      </section>
-
-      {/* Navigation Tabs */}
-      <Tab.Container activeKey={activeTab} onSelect={(k) => setActiveTab(k || 'local')}>
-        <section className="bg-light border-bottom">
-          <Container>
-            <Nav variant="tabs" className="border-0">
-              <Nav.Item>
-                <Nav.Link eventKey="local" className="text-dark fw-semibold">
-                  {t('navigation:localServices')}
-                </Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link eventKey="external" className="text-dark fw-semibold">
-                  {t('navigation:travelApps')}
-                </Nav.Link>
-              </Nav.Item>
-            </Nav>
-          </Container>
-        </section>
-
-        <Tab.Content>
-          <Tab.Pane eventKey="local">
-            {renderLocalServices()}
-          </Tab.Pane>
-          <Tab.Pane eventKey="external">
-            {renderExternalServices()}
-          </Tab.Pane>
-        </Tab.Content>
-      </Tab.Container>
-    </div>
+              </tbody>
+            </Table>
+          )}
+          <div className="text-muted small mt-3">
+            <strong>Note:</strong> Prices are estimates and may vary based on location, time, demand, and other factors. 
+            Please check the app for current pricing.
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowPricingModal(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </Container>
   );
 };
 

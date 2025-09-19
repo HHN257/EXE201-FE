@@ -1,6 +1,9 @@
 import axios from 'axios';
 import type { 
   Location, 
+  CreateLocationDto,
+  UpdateLocationDto,
+  LocationSearchDto,
   Service, 
   TourGuide, 
   Category, 
@@ -195,14 +198,23 @@ export const apiService = {
     api.get('/users/profile').then(res => res.data),
 
   // Locations
-  getPopularLocations: (): Promise<Location[]> =>
-    api.get('/locations/popular').then(res => res.data),
+  getAllLocations: (page = 1, pageSize = 20): Promise<Location[]> =>
+    api.get('/locations', { params: { page, pageSize } }).then(res => res.data),
   
-  getLocationById: (id: string): Promise<Location> =>
+  getLocationById: (id: number): Promise<Location> =>
     api.get(`/locations/${id}`).then(res => res.data),
 
-  searchLocations: (query: string): Promise<Location[]> =>
-    api.get('/locations/search', { params: { query } }).then(res => res.data),
+  searchLocations: (searchParams: LocationSearchDto): Promise<Location[]> =>
+    api.get('/locations/search', { params: searchParams }).then(res => res.data),
+
+  createLocation: (locationData: CreateLocationDto): Promise<Location> =>
+    api.post('/locations', locationData).then(res => res.data),
+
+  updateLocation: (id: number, locationData: UpdateLocationDto): Promise<Location> =>
+    api.put(`/locations/${id}`, locationData).then(res => res.data),
+
+  deleteLocation: (id: number): Promise<void> =>
+    api.delete(`/locations/${id}`).then(res => res.data),
 
   // Services
   getFeaturedServices: (): Promise<Service[]> =>

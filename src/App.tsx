@@ -9,7 +9,8 @@ import { ChatbotButton } from './components/ChatbotButton';
 import { useAuth } from './contexts/AuthContext';
 import HomePage from './pages/HomePage';
 import EnhancedServicesPage from './pages/EnhancedServicesPage';
-import DestinationsPage from './pages/DestinationsPage';
+import DestinationsPage from './pages/NewDestinationsPage';
+import LocationDetailPage from './pages/LocationDetailPage';
 import TourGuidesPage from './pages/TourGuidesPage';
 import TourGuideDetailPage from './pages/TourGuideDetailPage';
 import BookingsPage from './pages/BookingsPage';
@@ -17,10 +18,15 @@ import CurrencyPage from './pages/CurrencyPage';
 import AboutPage from './pages/AboutPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import UnauthorizedPage from './pages/UnauthorizedPage';
 import UserDashboard from './pages/UserDashboard';
 import TourGuideDashboard from './pages/TourGuideDashboard';
 import StaffDashboard from './pages/StaffDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminUserManagement from './pages/AdminUserManagement';
+import AdminTourGuideManagement from './pages/AdminTourGuideManagement';
+import AdminBookingsManagement from './pages/AdminBookingsManagement';
+import AdminAnalytics from './pages/AdminAnalytics';
 import TourGuideVerificationPage from './pages/TourGuideVerificationPage';
 import StaffVerificationPage from './pages/StaffVerificationPage';
 import UserTourGuideApplicationPage from './pages/UserTourGuideApplicationPage';
@@ -32,15 +38,14 @@ function App() {
   // Show loading spinner while checking authentication state
   if (isLoading) {
     return <LoadingSpinner />;
-  }
-
-  return (
+  }  return (
     <div className="App">
       <Header />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/services" element={<EnhancedServicesPage />} />
         <Route path="/destinations" element={<DestinationsPage />} />
+        <Route path="/destinations/:id" element={<LocationDetailPage />} />
         <Route path="/tour-guides" element={<TourGuidesPage />} />
         <Route path="/tour-guides/:id" element={<TourGuideDetailPage />} />
         <Route path="/bookings" element={<BookingsPage />} />
@@ -67,6 +72,9 @@ function App() {
             </PublicRoute>
           } 
         />
+        
+        {/* Unauthorized Access Route */}
+        <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
         {/* Role-based Dashboard Routes */}
         <Route 
@@ -105,6 +113,48 @@ function App() {
             <ProtectedRoute>
               <RoleBasedRoute allowedRoles={['Admin']}>
                 <AdminDashboard />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Admin Management Routes */}
+        <Route 
+          path="/admin/users" 
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['Admin']}>
+                <AdminUserManagement />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/tour-guides" 
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['Admin', 'Staff']}>
+                <AdminTourGuideManagement />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/bookings" 
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['Admin', 'Staff']}>
+                <AdminBookingsManagement />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/analytics" 
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['Admin']}>
+                <AdminAnalytics />
               </RoleBasedRoute>
             </ProtectedRoute>
           } 
