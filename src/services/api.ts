@@ -63,6 +63,13 @@ export interface RegisterRequest {
   preferredLanguage: string;
 }
 
+export interface UpdateProfileRequest {
+  name?: string;
+  phoneNumber?: string;
+  nationality?: string;
+  preferredLanguage?: string;
+}
+
 export interface AuthResponse {
   success: boolean;
   message: string;
@@ -114,6 +121,20 @@ export interface TourGuideDto {
 }
 
 export interface CreateTourGuideDto {
+  name: string;
+  bio?: string;
+  phoneNumber?: string;
+  email?: string;
+  languages?: string;
+  specializations?: string;
+  hourlyRate?: number;
+  currency?: string;
+  profileImage?: string;
+  isVerified?: boolean;
+  isActive?: boolean;
+}
+
+export interface UpdateTourGuideDto {
   name: string;
   bio?: string;
   phoneNumber?: string;
@@ -197,6 +218,11 @@ export const apiService = {
   getCurrentUser: (): Promise<User> =>
     api.get('/users/profile').then(res => res.data),
 
+  updateProfile: async (profileData: UpdateProfileRequest): Promise<User> => {
+    const response = await api.put('/users/profile', profileData);
+    return response.data;
+  },
+
   // Locations
   getAllLocations: (page = 1, pageSize = 20): Promise<Location[]> =>
     api.get('/locations', { params: { page, pageSize } }).then(res => res.data),
@@ -236,6 +262,17 @@ export const apiService = {
 
   getTourGuideById: (id: string): Promise<TourGuide> =>
     api.get(`/tourguides/${id}`).then(res => res.data),
+
+  getTourGuideByUserId: (userId: number): Promise<TourGuideDto> =>
+    api.get(`/tourguides/${userId}`).then(res => res.data),
+
+  getCurrentTourGuide: (): Promise<TourGuideDto> =>
+    api.get('/tourguides/current').then(res => res.data),
+
+  updateTourGuide: async (id: number, tourGuideData: UpdateTourGuideDto): Promise<TourGuideDto> => {
+    const response = await api.put(`/tourguides/${id}`, tourGuideData);
+    return response.data;
+  },
 
   searchTourGuides: (query: string, location?: string): Promise<TourGuide[]> =>
     api.get('/tourguides/search', { params: { query, location } }).then(res => res.data),
@@ -307,6 +344,17 @@ export const tourGuideBookingService = {
   // Get bookings for a tour guide
   getByTourGuide: (tourGuideId: number): Promise<TourGuideBookingDto[]> =>
     api.get(`/tourguidebookings/tourguide/${tourGuideId}`).then(res => res.data),
+
+  // Cancel a booking
+  cancel: async (id: number): Promise<void> => {
+    await api.delete(`/tourguidebookings/${id}`);
+  },
+
+  // Update booking status
+  updateStatus: async (id: number, status: string): Promise<TourGuideBookingDto> => {
+    const response = await api.patch(`/tourguidebookings/${id}/status`, { status });
+    return response.data;
+  },
 };
 
 // Tour Guide Review service

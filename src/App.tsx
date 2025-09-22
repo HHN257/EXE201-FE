@@ -5,7 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import RoleBasedRoute from './components/RoleBasedRoute';
 import LoadingSpinner from './components/LoadingSpinner';
 import DeepLinkTester from './components/DeepLinkTester';
-import { ChatbotButton } from './components/ChatbotButton';
+import ChatbotButton from './components/ChatbotButton';
 import { useAuth } from './contexts/AuthContext';
 import HomePage from './pages/HomePage';
 import EnhancedServicesPage from './pages/EnhancedServicesPage';
@@ -16,11 +16,13 @@ import TourGuideDetailPage from './pages/TourGuideDetailPage';
 import BookingsPage from './pages/BookingsPage';
 import CurrencyPage from './pages/CurrencyPage';
 import AboutPage from './pages/AboutPage';
+import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 import UserDashboard from './pages/UserDashboard';
 import TourGuideDashboard from './pages/TourGuideDashboard';
+import TourGuideProfilePage from './pages/TourGuideProfilePage';
 import StaffDashboard from './pages/StaffDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminUserManagement from './pages/AdminUserManagement';
@@ -98,6 +100,16 @@ function App() {
           } 
         />
         <Route 
+          path="/guide/profile" 
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['TourGuide']}>
+                <TourGuideProfilePage />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
           path="/staff/dashboard" 
           element={
             <ProtectedRoute>
@@ -156,6 +168,16 @@ function App() {
               <RoleBasedRoute allowedRoles={['Admin']}>
                 <AdminAnalytics />
               </RoleBasedRoute>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* User Profile Route - Available to all authenticated users */}
+        <Route 
+          path="/profile" 
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           } 
         />

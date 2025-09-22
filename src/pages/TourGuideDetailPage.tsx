@@ -84,7 +84,18 @@ const TourGuideDetailPage: React.FC = () => {
 
   const formatRate = (rate?: number, currency?: string) => {
     if (!rate) return 'Contact for pricing';
-    return `${currency || '$'}${rate}/hour`;
+    
+    // Default to VND for Vietnamese market
+    const displayCurrency = currency || 'VND';
+    
+    if (displayCurrency === 'VND') {
+      // Format for Vietnamese currency
+      const formattedRate = rate.toLocaleString('vi-VN');
+      return `${formattedRate} VND/giờ`;
+    } else {
+      // Format for other currencies (USD, etc.)
+      return `${displayCurrency}${rate}/hour`;
+    }
   };
 
   const getSpecializationBadges = () => {

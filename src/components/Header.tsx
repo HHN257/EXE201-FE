@@ -78,7 +78,10 @@ const Header: React.FC = () => {
                     <Settings size={16} className="me-2" />
                     Dashboard
                   </Dropdown.Item>
-                  <Dropdown.Item>Profile</Dropdown.Item>
+                  <Dropdown.Item as={Link} to={user?.role?.toLowerCase() === 'tourguide' ? '/guide/profile' : '/profile'}>
+                    <User size={16} className="me-2" />
+                    Profile
+                  </Dropdown.Item>
                   {(user?.role?.toLowerCase() === 'user' || user?.role?.toLowerCase() === 'tourguide') && (
                     <Dropdown.Item as={Link} to="/bookings">My Bookings</Dropdown.Item>
                   )}

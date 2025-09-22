@@ -12,7 +12,7 @@ const TourGuideDashboard: React.FC = () => {
       title: 'My Profile',
       description: 'Manage your tour guide profile',
       icon: <UserCheck size={24} />,
-      link: '/profile',
+      link: '/guide/profile',
       color: 'primary'
     },
     {
