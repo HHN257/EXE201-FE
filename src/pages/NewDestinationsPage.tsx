@@ -203,7 +203,7 @@ const DestinationsPage: React.FC = () => {
                 <div className="position-relative overflow-hidden" style={{ height: '200px' }}>
                   <Card.Img
                     variant="top"
-                    src={`https://images.unsplash.com/photo-1528127269322-539801943592?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80`}
+                    src={location.imageUrl || `https://images.unsplash.com/photo-1528127269322-539801943592?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80`}
                     alt={location.name}
                     className="h-100 w-100 object-fit-cover"
                   />

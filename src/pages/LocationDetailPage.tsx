@@ -87,7 +87,7 @@ const LocationDetailPage: React.FC = () => {
         className="position-relative"
         style={{
           height: '400px',
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(https://images.unsplash.com/photo-1528127269322-539801943592?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80)`,
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${location.imageUrl || 'https://via.placeholder.com/1200x400?text=No+Image'})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}

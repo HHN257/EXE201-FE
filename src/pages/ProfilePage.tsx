@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
-import { User, Phone, Globe, Flag, Mail, Edit3, Save, X } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Container, Row, Col, Card, Form, Button, Alert, Spinner, Image } from 'react-bootstrap';
+import { User, Phone, Globe, Flag, Mail, Edit3, Save, X, Camera, Upload } from 'lucide-react';
 import { apiService } from '../services/api';
 import type { UpdateProfileRequest } from '../services/api';
 import type { User as UserType } from '../types';
@@ -18,6 +18,9 @@ const ProfilePage: React.FC = () => {
     nationality: '',
     preferredLanguage: ''
   });
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load user profile on component mount
   useEffect(() => {
@@ -51,6 +54,30 @@ const ProfilePage: React.FC = () => {
     }));
   };
 
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleEdit = () => {
     setIsEditing(true);
     setError('');
@@ -61,6 +88,11 @@ const ProfilePage: React.FC = () => {
     setIsEditing(false);
     setError('');
     setSuccess('');
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     // Reset form data to original profile data
     if (profile) {
       setFormData({
@@ -85,11 +117,14 @@ const ProfilePage: React.FC = () => {
       if (formData.phoneNumber !== profile?.phoneNumber) updateData.phoneNumber = formData.phoneNumber;
       if (formData.nationality !== profile?.nationality) updateData.nationality = formData.nationality;
       if (formData.preferredLanguage !== profile?.preferredLanguage) updateData.preferredLanguage = formData.preferredLanguage;
+      if (selectedImage) updateData.profileImage = selectedImage;
 
       // Only make API call if there are changes
       if (Object.keys(updateData).length > 0) {
         const updatedProfile = await apiService.updateProfile(updateData);
         setProfile(updatedProfile);
+        setSelectedImage(null);
+        setImagePreview(null);
         
         setSuccess('Profile updated successfully!');
       }
@@ -122,9 +157,6 @@ const ProfilePage: React.FC = () => {
               <Card.Header className="bg-primary text-white py-4">
                 <div className="d-flex align-items-center justify-content-between">
                   <div className="d-flex align-items-center">
-                    <div className="bg-white bg-opacity-20 rounded-circle p-2 me-3">
-                      <User size={24} />
-                    </div>
                     <div>
                       <h4 className="mb-0">My Profile</h4>
                       <p className="mb-0 opacity-75">Manage your account information</p>
@@ -145,6 +177,62 @@ const ProfilePage: React.FC = () => {
               </Card.Header>
 
               <Card.Body className="p-4">
+                {/* Profile Image Section */}
+                <div className="text-center mb-4 pb-4 border-bottom">
+                  <div className="position-relative d-inline-block">
+                    <div 
+                      className="rounded-circle overflow-hidden border-3 border-light shadow-sm"
+                      style={{ width: '120px', height: '120px', cursor: isEditing ? 'pointer' : 'default' }}
+                      onClick={isEditing ? handleImageClick : undefined}
+                    >
+                      <Image
+                        src={imagePreview || profile?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'User')}&size=120&background=0d6efd&color=fff`}
+                        alt="Profile"
+                        className="w-100 h-100 object-fit-cover"
+                      />
+                    </div>
+                    {isEditing && (
+                      <div className="position-absolute bottom-0 end-0">
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          className="rounded-circle p-2"
+                          onClick={handleImageClick}
+                          style={{ width: '36px', height: '36px' }}
+                        >
+                          <Camera size={16} />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  {isEditing && (
+                    <div className="mt-3">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageSelect}
+                        className="d-none"
+                      />
+                      <div className="d-flex gap-2 justify-content-center">
+                        <Button variant="outline-primary" size="sm" onClick={handleImageClick}>
+                          <Upload size={14} className="me-1" />
+                          Choose Image
+                        </Button>
+                        {(selectedImage || imagePreview) && (
+                          <Button variant="outline-danger" size="sm" onClick={handleRemoveImage}>
+                            <X size={14} className="me-1" />
+                            Remove
+                          </Button>
+                        )}
+                      </div>
+                      <small className="text-muted d-block mt-2">
+                        Click to upload a new profile image (JPG, PNG, GIF - Max 5MB)
+                      </small>
+                    </div>
+                  )}
+                </div>
+
                 {/* Alerts */}
                 {error && (
                   <Alert variant="danger" className="mb-4">

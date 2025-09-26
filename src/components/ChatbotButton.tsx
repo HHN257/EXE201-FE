@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, Sparkles, Bot } from 'lucide-react';
+import { Card } from 'react-bootstrap';
 import { chatbotApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import type { ChatMessage, ChatResponse } from '../types';
@@ -122,8 +123,8 @@ export const ChatbotButton: React.FC = () => {
     <div style={{ position: 'relative', zIndex: 9999 }}>
       {/* Chat Panel */}
       {isOpen && (
-        <div 
-          className="rounded-2xl shadow-2xl border border-gray-600/50 flex flex-col backdrop-blur-sm transform transition-all duration-300 ease-out animate-in slide-in-from-bottom-4"
+        <Card 
+          className="d-flex flex-column"
           style={{ 
             position: 'fixed',
             bottom: '150px', 
@@ -131,69 +132,97 @@ export const ChatbotButton: React.FC = () => {
             width: '380px',
             height: '500px',
             zIndex: 9999,
-            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+            background: 'linear-gradient(135deg, #2c3e50 0%, #1a252f 100%)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '1rem'
           }}
         >
           {/* Header */}
-          <div className="relative overflow-hidden rounded-t-2xl">
-            <div 
-              className="p-4 flex items-center justify-between relative z-10"
-              style={{
-                background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #6366f1 100%)',
-              }}
-            >
-              <div className="flex items-center space-x-3">
-                <div className="relative">
-                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                    <Bot size={20} className="text-white" />
-                  </div>
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
+          <Card.Header 
+            className="position-relative overflow-hidden d-flex align-items-center justify-content-between p-3"
+            style={{
+              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #6366f1 100%)',
+              borderRadius: '1rem 1rem 0 0',
+              border: 'none'
+            }}
+          >
+            <div className="d-flex align-items-center" style={{ gap: '0.75rem' }}>
+              <div className="position-relative">
+                <div 
+                  className="rounded-circle d-flex align-items-center justify-content-center"
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)'
+                  }}
+                >
+                  <Bot size={20} color="white" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-white text-lg">SmartTravel AI</h3>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <p className="text-xs text-blue-100">Online • Ready to help</p>
-                  </div>
+                <div 
+                  className="position-absolute rounded-circle"
+                  style={{
+                    top: '-4px',
+                    right: '-4px',
+                    width: '16px',
+                    height: '16px',
+                    backgroundColor: '#28a745',
+                    border: '2px solid white'
+                  }}
+                ></div>
+              </div>
+              <div>
+                <h6 className="text-white fw-bold mb-0">SmartTravel AI</h6>
+                <div className="d-flex align-items-center" style={{ gap: '0.5rem' }}>
+                  <div 
+                    className="rounded-circle"
+                    style={{
+                      width: '8px',
+                      height: '8px',
+                      backgroundColor: '#28a745'
+                    }}
+                  ></div>
+                  <small className="text-white-50">Online • Ready to help</small>
                 </div>
               </div>
-              <button
-                onClick={toggleChat}
-                className="text-white hover:bg-white/20 p-2 rounded-full transition-all duration-200 hover:scale-110 mr-2"
-              >
-                <X size={20} />
-              </button>
             </div>
-            {/* Animated background shapes */}
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full animate-pulse"></div>
-              <div className="absolute -bottom-2 -left-2 w-16 h-16 bg-white/5 rounded-full animate-bounce"></div>
-            </div>
-          </div>
+            <button
+              onClick={toggleChat}
+              className="btn btn-link text-white p-2"
+              style={{ border: 'none', fontSize: '1rem' }}
+            >
+              <X size={20} />
+            </button>
+          </Card.Header>
 
           {/* Messages */}
-          <div 
-            className="overflow-y-auto p-4 space-y-4 custom-scrollbar" 
+          <Card.Body 
+            className="overflow-auto p-3" 
             style={{ 
-              background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
-              height: 'calc(500px - 140px)', // Fixed height: total height minus header and input areas
+              background: 'linear-gradient(180deg, #2c3e50 0%, #1a252f 100%)',
+              height: 'calc(500px - 140px)',
               minHeight: '300px',
               maxHeight: 'calc(500px - 140px)'
             }}
           >
             {messages.length === 0 && !isLoading && (
-              <div className="text-center text-gray-400 mt-16 animate-fade-in">
-                <h4 className="text-lg font-semibold text-white mb-2">Welcome to SmartTravel AI!</h4>
-                <p className="text-sm text-white leading-relaxed max-w-xs mx-auto">
+              <div className="text-center text-light mt-5">
+                <h6 className="text-white mb-2">Welcome to SmartTravel AI!</h6>
+                <p className="small text-white-50 mb-3" style={{ maxWidth: '250px', margin: '0 auto' }}>
                   I'm your personal travel assistant. Ask me about destinations, tour guides, bookings, or planning tips!
                 </p>
-                <div className="flex flex-wrap gap-2 mt-4 justify-center">
+                <div className="d-flex flex-wrap justify-content-center gap-2">
                   {['Plan my trip', 'Find tour guides', 'Best destinations'].map((suggestion, index) => (
                     <button
                       key={index}
                       onClick={() => setInputMessage(suggestion)}
-                      className="px-3 py-1 text-xs bg-blue-600/20 text-blue-300 rounded-full border border-blue-500/30 hover:bg-blue-600/30 transition-all duration-200"
+                      className="btn btn-outline-primary btn-sm"
+                      style={{ 
+                        fontSize: '0.7rem',
+                        backgroundColor: 'rgba(13, 110, 253, 0.2)',
+                        borderColor: 'rgba(13, 110, 253, 0.5)',
+                        color: '#b3d9ff'
+                      }}
                     >
                       {suggestion}
                     </button>
@@ -273,7 +302,7 @@ export const ChatbotButton: React.FC = () => {
               </div>
             )}
             <div ref={messagesEndRef} />
-          </div>
+          </Card.Body>
 
           {/* Input */}
           <div className="p-4 border-t border-gray-600/50" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}>
@@ -309,7 +338,7 @@ export const ChatbotButton: React.FC = () => {
               </div>
             )}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Chat Button */}

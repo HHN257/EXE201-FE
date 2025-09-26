@@ -1,9 +1,8 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, LogOut, Settings, Shield, Crown, UserCheck } from 'lucide-react';
-import { Navbar, Nav, Container, Button, Dropdown, Badge } from 'react-bootstrap';
+import { Navbar, Nav, Container, Button, Dropdown, Image } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
-import { getUserDisplayName } from '../utils/roleUtils';
 
 const Header: React.FC = () => {
   const { isAuthenticated, user, logout, getRoleBasedDashboard } = useAuth();
@@ -27,18 +26,6 @@ const Header: React.FC = () => {
     }
   };
 
-  const getRoleBadgeColor = (role: string) => {
-    switch (role?.toLowerCase()) {
-      case 'admin':
-        return 'danger';
-      case 'staff':
-        return 'warning';
-      case 'tourguide':
-        return 'success';
-      default:
-        return 'secondary';
-    }
-  };
 
   return (
     <Navbar bg="white" expand="lg" className="shadow-sm border-bottom sticky-top">
@@ -68,9 +55,13 @@ const Header: React.FC = () => {
                   <div className="d-flex align-items-center gap-2">
                     {getRoleIcon(user?.role || 'user')}
                     <span>{user?.name || 'User'}</span>
-                    <Badge bg={getRoleBadgeColor(user?.role || 'user')} className="ms-1">
-                      {getUserDisplayName(user?.role || 'user')}
-                    </Badge>
+                    <div className="rounded-circle overflow-hidden border" style={{ width: '40px', height: '40px' }}>
+                      <Image
+                        src={user?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&size=40&background=0d6efd&color=fff`}
+                        alt="Profile"
+                        className="w-100 h-100 object-fit-cover"
+                      />
+                    </div>
                   </div>
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
@@ -78,10 +69,23 @@ const Header: React.FC = () => {
                     <Settings size={16} className="me-2" />
                     Dashboard
                   </Dropdown.Item>
-                  <Dropdown.Item as={Link} to={user?.role?.toLowerCase() === 'tourguide' ? '/guide/profile' : '/profile'}>
-                    <User size={16} className="me-2" />
-                    Profile
-                  </Dropdown.Item>
+                  {user?.role?.toLowerCase() === 'tourguide' ? (
+                    <>
+                      <Dropdown.Item as={Link} to="/profile">
+                        <User size={16} className="me-2" />
+                        Personal Profile
+                      </Dropdown.Item>
+                      <Dropdown.Item as={Link} to="/guide/profile">
+                        <UserCheck size={16} className="me-2" />
+                        Tour Guide Profile
+                      </Dropdown.Item>
+                    </>
+                  ) : (
+                    <Dropdown.Item as={Link} to="/profile">
+                      <User size={16} className="me-2" />
+                      Profile
+                    </Dropdown.Item>
+                  )}
                   {(user?.role?.toLowerCase() === 'user' || user?.role?.toLowerCase() === 'tourguide') && (
                     <Dropdown.Item as={Link} to="/bookings">My Bookings</Dropdown.Item>
                   )}

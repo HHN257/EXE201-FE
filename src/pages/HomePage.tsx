@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Hero from '../components/Hero';
+import HomePageWeather from '../components/HomePageWeather';
 import { Star, MapPin, Users, Clock, ArrowRight } from 'lucide-react';
 import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap';
 import type { Location, Category } from '../types';
@@ -85,6 +86,17 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-vh-100 bg-light">
       <Hero />
+
+      {/* Weather Widget Section */}
+      <section className="py-4 bg-gradient-to-r from-blue-50 to-cyan-50" style={{ backgroundColor: '#f8fbff' }}>
+        <Container>
+          <Row className="justify-content-center">
+            <Col xs={12} sm={10} md={8} lg={6} xl={5}>
+              <HomePageWeather />
+            </Col>
+          </Row>
+        </Container>
+      </section>
 
       {/* Categories Section */}
       <section className="py-5 bg-white">

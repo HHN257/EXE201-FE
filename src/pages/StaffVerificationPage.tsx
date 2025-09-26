@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Badge, Tab, Tabs } from 'react-bootstrap';
-import { Shield, Eye, CheckCircle, XCircle, Clock, Search, Filter, Users } from 'lucide-react';
+import { Shield, Eye, CheckCircle, XCircle, Clock, Search, Filter, Users, FileText, AlertCircle } from 'lucide-react';
 import { verificationService, tourGuideService } from '../services/api';
 import type { TourGuideVerificationRequest, AdminReviewRequest } from '../types';
 import type { TourGuideDto } from '../services/api';
@@ -359,211 +359,500 @@ const StaffVerificationPage: React.FC = () => {
       </Tabs>
 
       {/* Review Modal */}
-      <Modal show={showReviewModal} onHide={() => setShowReviewModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            {reviewAction === 'Approved' ? (
-              <><CheckCircle size={20} className="me-2 text-success" />Approve Request</>
-            ) : (
-              <><XCircle size={20} className="me-2 text-danger" />Reject Request</>
-            )}
+      <Modal show={showReviewModal} onHide={() => setShowReviewModal(false)} className="staff-review-modal">
+        <Modal.Header closeButton className="bg-gradient border-0" style={{ 
+          background: reviewAction === 'Approved' 
+            ? 'linear-gradient(135deg, #28a745 0%, #20c997 100%)' 
+            : 'linear-gradient(135deg, #dc3545 0%, #fd7e14 100%)'
+        }}>
+          <Modal.Title className="text-white d-flex align-items-center">
+            <div className="bg-white bg-opacity-20 rounded-circle p-2 me-3">
+              {reviewAction === 'Approved' ? (
+                <CheckCircle size={24} className="text-white" />
+              ) : (
+                <XCircle size={24} className="text-white" />
+              )}
+            </div>
+            <div>
+              <h4 className="mb-0">
+                {reviewAction === 'Approved' ? 'Approve Request' : 'Reject Request'}
+              </h4>
+              <small className="opacity-75">Review verification application</small>
+            </div>
           </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className="p-4" style={{ backgroundColor: '#f8f9fa' }}>
           {selectedRequest && (
             <div>
-              <div className="mb-3">
-                <strong>Tour Guide:</strong> {selectedRequest.tourGuideName}
-              </div>
-              <div className="mb-3">
-                <strong>Full Name:</strong> {selectedRequest.fullName}
-              </div>
-              <div className="mb-3">
-                <strong>Email:</strong> {selectedRequest.email}
+              {/* Application Overview */}
+              <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+                <h6 className="text-primary mb-3 d-flex align-items-center">
+                  <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                    <Shield size={16} />
+                  </div>
+                  Application Summary
+                </h6>
+                <Row>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <strong className="text-dark">Tour Guide:</strong>
+                      <div className="mt-1 text-muted">{selectedRequest.tourGuideName || selectedRequest.userName}</div>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <strong className="text-dark">Full Name:</strong>
+                      <div className="mt-1 text-muted">{selectedRequest.fullName}</div>
+                    </div>
+                  </Col>
+                </Row>
+                <div className="mb-0">
+                  <strong className="text-dark">Email:</strong>
+                  <div className="mt-1 text-muted">{selectedRequest.email}</div>
+                </div>
               </div>
               
-              <Form.Group className="mb-3">
-                <Form.Label>Admin Notes</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
-                  placeholder="Add notes about your decision..."
-                />
-              </Form.Group>
+              {/* Admin Decision */}
+              <div className="bg-white rounded-3 p-4 shadow-sm border">
+                <h6 className="text-primary mb-3 d-flex align-items-center">
+                  <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                    <FileText size={16} />
+                  </div>
+                  Review Notes
+                </h6>
+                <Form.Group className="mb-0">
+                  <Form.Label className="fw-semibold text-dark">Admin Notes</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={4}
+                    value={adminNotes}
+                    onChange={(e) => setAdminNotes(e.target.value)}
+                    placeholder="Add notes about your decision..."
+                    className="border-2"
+                    style={{ borderRadius: '10px' }}
+                  />
+                  <Form.Text className="text-muted">
+                    These notes will be visible to the applicant and help them understand your decision.
+                  </Form.Text>
+                </Form.Group>
+              </div>
             </div>
           )}
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowReviewModal(false)}>
-            Cancel
-          </Button>
-          <Button
-            variant={reviewAction === 'Approved' ? 'success' : 'danger'}
-            onClick={handleReview}
-            disabled={submitting}
-          >
-            {submitting ? (
-              <>
-                <span className="spinner-border spinner-border-sm me-2" />
-                Processing...
-              </>
-            ) : (
-              <>
-                {reviewAction === 'Approved' ? <CheckCircle size={16} className="me-2" /> : <XCircle size={16} className="me-2" />}
-                {reviewAction}
-              </>
-            )}
-          </Button>
+        <Modal.Footer className="border-0 bg-light">
+          <div className="d-flex justify-content-between align-items-center w-100">
+            <small className="text-muted">
+              <AlertCircle size={16} className="me-1" />
+              This action cannot be undone
+            </small>
+            <div className="d-flex gap-3">
+              <Button 
+                variant="outline-secondary" 
+                onClick={() => setShowReviewModal(false)}
+                className="px-4"
+                style={{ borderRadius: '25px' }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant={reviewAction === 'Approved' ? 'success' : 'danger'}
+                onClick={handleReview}
+                disabled={submitting}
+                className="px-4 shadow-sm"
+                style={{ 
+                  borderRadius: '25px',
+                  background: reviewAction === 'Approved' 
+                    ? 'linear-gradient(135deg, #28a745 0%, #20c997 100%)' 
+                    : 'linear-gradient(135deg, #dc3545 0%, #fd7e14 100%)',
+                  border: 'none'
+                }}
+              >
+                {submitting ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    {reviewAction === 'Approved' ? <CheckCircle size={16} className="me-2" /> : <XCircle size={16} className="me-2" />}
+                    {reviewAction}
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </Modal.Footer>
       </Modal>
 
       {/* Details Modal */}
-      <Modal show={showDetailsModal} onHide={() => setShowDetailsModal(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Verification Request Details</Modal.Title>
+      <Modal show={showDetailsModal} onHide={() => setShowDetailsModal(false)} size="lg" className="staff-details-modal">
+        <Modal.Header closeButton className="bg-gradient border-0" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+          <Modal.Title className="text-white d-flex align-items-center">
+            <div className="bg-white bg-opacity-20 rounded-circle p-2 me-3">
+              <Eye size={24} className="text-white" />
+            </div>
+            <div>
+              <h4 className="mb-0">Verification Request Details</h4>
+              <small className="opacity-75">Complete application review</small>
+            </div>
+          </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className="p-4" style={{ backgroundColor: '#f8f9fa' }}>
           {selectedRequest && (
             <div>
-              <Row className="mb-3">
-                <Col md={6}>
-                  <strong>Status:</strong>
-                  <div className="mt-1">{getStatusBadge(selectedRequest.status)}</div>
-                </Col>
-                <Col md={6}>
-                  <strong>Submitted:</strong>
-                  <div className="mt-1">{formatDate(selectedRequest.createdAt)}</div>
-                </Col>
-              </Row>
+              {/* Status Overview */}
+              <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+                <h5 className="text-primary mb-3 d-flex align-items-center">
+                  <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                    <Clock size={18} />
+                  </div>
+                  Application Status
+                </h5>
+                <Row>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <strong className="text-dark">Current Status:</strong>
+                      <div className="mt-1">{getStatusBadge(selectedRequest.status)}</div>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <strong className="text-dark">Submitted:</strong>
+                      <div className="mt-1 text-muted">{formatDate(selectedRequest.createdAt)}</div>
+                    </div>
+                  </Col>
+                </Row>
+              </div>
 
-              <Row className="mb-3">
-                <Col md={6}>
-                  <strong>Tour Guide:</strong>
-                  <div className="mt-1">{selectedRequest.tourGuideName}</div>
-                </Col>
-                <Col md={6}>
-                  <strong>Full Name:</strong>
-                  <div className="mt-1">{selectedRequest.fullName}</div>
-                </Col>
-              </Row>
+              {/* Personal Information */}
+              <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+                <h5 className="text-primary mb-3 d-flex align-items-center">
+                  <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                    <Shield size={18} />
+                  </div>
+                  Personal Information
+                </h5>
+                <Row>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <strong className="text-dark">Tour Guide:</strong>
+                      <div className="mt-1 text-muted">{selectedRequest.tourGuideName || selectedRequest.userName || 'N/A'}</div>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <strong className="text-dark">Full Name:</strong>
+                      <div className="mt-1 text-muted">{selectedRequest.fullName}</div>
+                    </div>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <strong className="text-dark">Identity Number:</strong>
+                      <div className="mt-1 text-muted">{selectedRequest.identityNumber}</div>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <strong className="text-dark">Phone:</strong>
+                      <div className="mt-1 text-muted">{selectedRequest.phoneNumber}</div>
+                    </div>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <strong className="text-dark">Email:</strong>
+                      <div className="mt-1 text-muted">{selectedRequest.email}</div>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <strong className="text-dark">Address:</strong>
+                      <div className="mt-1 text-muted">{selectedRequest.address || 'N/A'}</div>
+                    </div>
+                  </Col>
+                </Row>
+              </div>
 
-              <Row className="mb-3">
-                <Col md={6}>
-                  <strong>Identity Number:</strong>
-                  <div className="mt-1">{selectedRequest.identityNumber}</div>
-                </Col>
-                <Col md={6}>
-                  <strong>Phone:</strong>
-                  <div className="mt-1">{selectedRequest.phoneNumber}</div>
-                </Col>
-              </Row>
-
-              <Row className="mb-3">
-                <Col md={6}>
-                  <strong>Email:</strong>
-                  <div className="mt-1">{selectedRequest.email}</div>
-                </Col>
-                <Col md={6}>
-                  <strong>Address:</strong>
-                  <div className="mt-1">{selectedRequest.address || 'N/A'}</div>
-                </Col>
-              </Row>
-
+              {/* License Information */}
               {selectedRequest.licenseNumber && (
-                <Row className="mb-3">
-                  <Col md={6}>
-                    <strong>License Number:</strong>
-                    <div className="mt-1">{selectedRequest.licenseNumber}</div>
-                  </Col>
-                  <Col md={6}>
-                    <strong>Issuing Authority:</strong>
-                    <div className="mt-1">{selectedRequest.issuingAuthority || 'N/A'}</div>
-                  </Col>
-                </Row>
-              )}
-
-              {selectedRequest.experience && (
-                <div className="mb-3">
-                  <strong>Experience:</strong>
-                  <div className="mt-1">{selectedRequest.experience}</div>
+                <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+                  <h5 className="text-primary mb-3 d-flex align-items-center">
+                    <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                      <Shield size={18} />
+                    </div>
+                    License Information
+                  </h5>
+                  <Row>
+                    <Col md={6}>
+                      <div className="mb-3">
+                        <strong className="text-dark">License Number:</strong>
+                        <div className="mt-1 text-muted">{selectedRequest.licenseNumber}</div>
+                      </div>
+                    </Col>
+                    <Col md={6}>
+                      <div className="mb-3">
+                        <strong className="text-dark">Issuing Authority:</strong>
+                        <div className="mt-1 text-muted">{selectedRequest.issuingAuthority || 'N/A'}</div>
+                      </div>
+                    </Col>
+                  </Row>
                 </div>
               )}
 
-              {selectedRequest.languages && (
-                <div className="mb-3">
-                  <strong>Languages:</strong>
-                  <div className="mt-1">{selectedRequest.languages}</div>
+              {/* Professional Qualifications */}
+              {(selectedRequest.experience || selectedRequest.languages || selectedRequest.specializations) && (
+                <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+                  <h5 className="text-primary mb-3 d-flex align-items-center">
+                    <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                      <FileText size={18} />
+                    </div>
+                    Professional Qualifications
+                  </h5>
+                  
+                  {selectedRequest.experience && (
+                    <div className="mb-3">
+                      <strong className="text-dark">Experience:</strong>
+                      <div className="mt-2 p-3 bg-light rounded-2" style={{ whiteSpace: 'pre-wrap' }}>
+                        {selectedRequest.experience}
+                      </div>
+                    </div>
+                  )}
+
+                  <Row>
+                    {selectedRequest.languages && (
+                      <Col md={6}>
+                        <div className="mb-3">
+                          <strong className="text-dark">Languages:</strong>
+                          <div className="mt-1">
+                            {selectedRequest.languages.split(',').map((lang: string, index: number) => (
+                              <Badge key={index} bg="primary" className="me-1 mb-1">
+                                {lang.trim()}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </Col>
+                    )}
+
+                    {selectedRequest.specializations && (
+                      <Col md={6}>
+                        <div className="mb-3">
+                          <strong className="text-dark">Specializations:</strong>
+                          <div className="mt-1">
+                            {selectedRequest.specializations.split(',').map((spec: string, index: number) => (
+                              <Badge key={index} bg="secondary" className="me-1 mb-1">
+                                {spec.trim()}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </Col>
+                    )}
+                  </Row>
                 </div>
               )}
 
-              {selectedRequest.specializations && (
-                <div className="mb-3">
-                  <strong>Specializations:</strong>
-                  <div className="mt-1">{selectedRequest.specializations}</div>
-                </div>
-              )}
-
+              {/* Additional Notes */}
               {selectedRequest.additionalNotes && (
-                <div className="mb-3">
-                  <strong>Additional Notes:</strong>
-                  <div className="mt-1">{selectedRequest.additionalNotes}</div>
+                <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+                  <h6 className="text-primary mb-2">Additional Notes</h6>
+                  <div className="mt-2 p-3 bg-light rounded-2" style={{ whiteSpace: 'pre-wrap' }}>
+                    {selectedRequest.additionalNotes}
+                  </div>
                 </div>
               )}
 
-              {selectedRequest.reviewedByAdminName && (
-                <Row className="mb-3">
-                  <Col md={6}>
-                    <strong>Reviewed By:</strong>
-                    <div className="mt-1">{selectedRequest.reviewedByAdminName}</div>
-                  </Col>
-                  <Col md={6}>
-                    <strong>Review Date:</strong>
-                    <div className="mt-1">{selectedRequest.reviewedAt ? formatDate(selectedRequest.reviewedAt) : 'N/A'}</div>
-                  </Col>
-                </Row>
+              {/* Document Images Section */}
+              {(selectedRequest.identityCardFrontUrl || selectedRequest.identityCardBackUrl || selectedRequest.tourGuideLicenseUrl) && (
+                <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+                  <h5 className="text-primary mb-3 d-flex align-items-center">
+                    <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                      <FileText size={18} />
+                    </div>
+                    Submitted Documents
+                  </h5>
+                  <Row className="g-3">
+                    {selectedRequest.identityCardFrontUrl && (
+                      <Col md={4}>
+                        <div className="text-center">
+                          <p className="mb-2 fw-semibold text-dark">Identity Card (Front)</p>
+                          <div className="position-relative">
+                            <img
+                              src={selectedRequest.identityCardFrontUrl}
+                              alt="Identity Card Front"
+                              className="img-thumbnail w-100 shadow-sm"
+                              style={{ 
+                                height: '200px', 
+                                objectFit: 'cover', 
+                                cursor: 'pointer',
+                                borderRadius: '12px'
+                              }}
+                              onClick={() => window.open(selectedRequest.identityCardFrontUrl, '_blank')}
+                            />
+                            <div className="position-absolute top-0 end-0 m-2">
+                              <Badge bg="primary" className="shadow-sm">
+                                <Eye size={12} className="me-1" />
+                                View
+                              </Badge>
+                            </div>
+                          </div>
+                          <small className="text-muted d-block mt-1">Click to view full size</small>
+                        </div>
+                      </Col>
+                    )}
+                    {selectedRequest.identityCardBackUrl && (
+                      <Col md={4}>
+                        <div className="text-center">
+                          <p className="mb-2 fw-semibold text-dark">Identity Card (Back)</p>
+                          <div className="position-relative">
+                            <img
+                              src={selectedRequest.identityCardBackUrl}
+                              alt="Identity Card Back"
+                              className="img-thumbnail w-100 shadow-sm"
+                              style={{ 
+                                height: '200px', 
+                                objectFit: 'cover', 
+                                cursor: 'pointer',
+                                borderRadius: '12px'
+                              }}
+                              onClick={() => window.open(selectedRequest.identityCardBackUrl, '_blank')}
+                            />
+                            <div className="position-absolute top-0 end-0 m-2">
+                              <Badge bg="primary" className="shadow-sm">
+                                <Eye size={12} className="me-1" />
+                                View
+                              </Badge>
+                            </div>
+                          </div>
+                          <small className="text-muted d-block mt-1">Click to view full size</small>
+                        </div>
+                      </Col>
+                    )}
+                    {selectedRequest.tourGuideLicenseUrl && (
+                      <Col md={4}>
+                        <div className="text-center">
+                          <p className="mb-2 fw-semibold text-dark">Tour Guide License</p>
+                          <div className="position-relative">
+                            <img
+                              src={selectedRequest.tourGuideLicenseUrl}
+                              alt="Tour Guide License"
+                              className="img-thumbnail w-100 shadow-sm"
+                              style={{ 
+                                height: '200px', 
+                                objectFit: 'cover', 
+                                cursor: 'pointer',
+                                borderRadius: '12px'
+                              }}
+                              onClick={() => window.open(selectedRequest.tourGuideLicenseUrl, '_blank')}
+                            />
+                            <div className="position-absolute top-0 end-0 m-2">
+                              <Badge bg="primary" className="shadow-sm">
+                                <Eye size={12} className="me-1" />
+                                View
+                              </Badge>
+                            </div>
+                          </div>
+                          <small className="text-muted d-block mt-1">Click to view full size</small>
+                        </div>
+                      </Col>
+                    )}
+                  </Row>
+                </div>
               )}
 
-              {selectedRequest.adminNotes && (
-                <Alert variant={selectedRequest.status === 'Approved' ? 'success' : 'warning'}>
-                  <strong>Admin Notes:</strong>
-                  <div className="mt-1">{selectedRequest.adminNotes}</div>
-                </Alert>
+              {/* Admin Review Section */}
+              {(selectedRequest.reviewedByAdminName || selectedRequest.adminNotes) && (
+                <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+                  <h5 className="text-primary mb-3 d-flex align-items-center">
+                    <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                      <Eye size={18} />
+                    </div>
+                    Admin Review
+                  </h5>
+                  {selectedRequest.reviewedByAdminName && (
+                    <Row className="mb-3">
+                      <Col md={6}>
+                        <div className="mb-3">
+                          <strong className="text-dark">Reviewed By:</strong>
+                          <div className="mt-1 text-muted">{selectedRequest.reviewedByAdminName}</div>
+                        </div>
+                      </Col>
+                      <Col md={6}>
+                        <div className="mb-3">
+                          <strong className="text-dark">Review Date:</strong>
+                          <div className="mt-1 text-muted">{selectedRequest.reviewedAt ? formatDate(selectedRequest.reviewedAt) : 'N/A'}</div>
+                        </div>
+                      </Col>
+                    </Row>
+                  )}
+                  {selectedRequest.adminNotes && (
+                    <div className="mb-0">
+                      <strong className="text-dark">Admin Notes:</strong>
+                      <div className="mt-2 p-3 rounded-2" style={{ 
+                        backgroundColor: selectedRequest.status === 'Approved' ? '#d4edda' : '#fff3cd',
+                        whiteSpace: 'pre-wrap'
+                      }}>
+                        {selectedRequest.adminNotes}
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           )}
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDetailsModal(false)}>
-            Close
-          </Button>
-          {selectedRequest && (selectedRequest.status === 'Pending' || selectedRequest.status === 'UnderReview') && (
-            <div className="d-flex gap-2">
-              <Button
-                variant="success"
-                onClick={() => {
-                  setReviewAction('Approved');
-                  setShowDetailsModal(false);
-                  setShowReviewModal(true);
-                }}
-              >
-                <CheckCircle size={16} className="me-2" />
-                Approve
-              </Button>
-              <Button
-                variant="danger"
-                onClick={() => {
-                  setReviewAction('Rejected');
-                  setShowDetailsModal(false);
-                  setShowReviewModal(true);
-                }}
-              >
-                <XCircle size={16} className="me-2" />
-                Reject
-              </Button>
-            </div>
-          )}
+        <Modal.Footer className="border-0 bg-light">
+          <div className="d-flex justify-content-between align-items-center w-100">
+            <Button 
+              variant="outline-primary" 
+              onClick={() => setShowDetailsModal(false)}
+              className="px-4"
+              style={{ borderRadius: '25px' }}
+            >
+              Close
+            </Button>
+            {selectedRequest && (selectedRequest.status === 'Pending' || selectedRequest.status === 'UnderReview') && (
+              <div className="d-flex gap-3">
+                <Button
+                  variant="success"
+                  onClick={() => {
+                    setReviewAction('Approved');
+                    setShowDetailsModal(false);
+                    setShowReviewModal(true);
+                  }}
+                  className="px-4 shadow-sm"
+                  style={{ 
+                    borderRadius: '25px',
+                    background: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
+                    border: 'none'
+                  }}
+                >
+                  <CheckCircle size={16} className="me-2" />
+                  Approve
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={() => {
+                    setReviewAction('Rejected');
+                    setShowDetailsModal(false);
+                    setShowReviewModal(true);
+                  }}
+                  className="px-4 shadow-sm"
+                  style={{ 
+                    borderRadius: '25px',
+                    background: 'linear-gradient(135deg, #dc3545 0%, #fd7e14 100%)',
+                    border: 'none'
+                  }}
+                >
+                  <XCircle size={16} className="me-2" />
+                  Reject
+                </Button>
+              </div>
+            )}
+          </div>
         </Modal.Footer>
       </Modal>
     </Container>

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Form, Button, Alert, Spinner, InputGroup } from 'react-bootstrap';
-import { User, Phone, Globe, Mail, Edit3, Save, X, Star, DollarSign, FileText, Award } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Container, Row, Col, Card, Form, Button, Alert, Spinner, InputGroup, Image } from 'react-bootstrap';
+import { User, Globe, Edit3, Save, X, Star, DollarSign, FileText, Award, Camera, Upload } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/api';
 import type { UpdateTourGuideDto, TourGuideDto } from '../services/api';
@@ -16,8 +16,6 @@ const TourGuideProfilePage: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     bio: '',
-    phoneNumber: '',
-    email: '',
     languages: '',
     specializations: '',
     hourlyRate: 0,
@@ -26,6 +24,9 @@ const TourGuideProfilePage: React.FC = () => {
     isVerified: false,
     isActive: true
   });
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load tour guide profile on component mount
   useEffect(() => {
@@ -44,8 +45,6 @@ const TourGuideProfilePage: React.FC = () => {
         setFormData({
           name: profileData.name || '',
           bio: profileData.bio || '',
-          phoneNumber: '', // Not in TourGuideDto, will need to be added
-          email: '', // Not in TourGuideDto, will need to be added
           languages: profileData.languages || '',
           specializations: profileData.specializations || '',
           hourlyRate: profileData.hourlyRate || 0,
@@ -72,6 +71,30 @@ const TourGuideProfilePage: React.FC = () => {
     }));
   };
 
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleEdit = () => {
     setIsEditing(true);
     setError('');
@@ -82,13 +105,16 @@ const TourGuideProfilePage: React.FC = () => {
     setIsEditing(false);
     setError('');
     setSuccess('');
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     // Reset form data to original profile data
     if (profile) {
       setFormData({
         name: profile.name || '',
         bio: profile.bio || '',
-        phoneNumber: '', // Not in TourGuideDto
-        email: '', // Not in TourGuideDto
         languages: profile.languages || '',
         specializations: profile.specializations || '',
         hourlyRate: profile.hourlyRate || 0,
@@ -109,20 +135,24 @@ const TourGuideProfilePage: React.FC = () => {
       const updateData: UpdateTourGuideDto = {
         name: formData.name,
         bio: formData.bio,
-        phoneNumber: formData.phoneNumber,
-        email: formData.email,
         languages: formData.languages,
         specializations: formData.specializations,
         hourlyRate: formData.hourlyRate,
         currency: formData.currency,
-        profileImage: formData.profileImage,
         isVerified: formData.isVerified,
         isActive: formData.isActive
       };
 
+      // Only include profileImage if a new image was selected
+      if (selectedImage) {
+        updateData.profileImage = selectedImage;
+      }
+
       if (profile?.id) {
         const updatedProfile = await apiService.updateTourGuide(profile.id, updateData);
         setProfile(updatedProfile);
+        setSelectedImage(null);
+        setImagePreview(null);
         setSuccess('Profile updated successfully!');
       }
       
@@ -149,14 +179,11 @@ const TourGuideProfilePage: React.FC = () => {
     <div className="min-vh-100 bg-light py-5">
       <Container>
         <Row className="justify-content-center">
-          <Col md={10} lg={8}>
+          <Col xs={12} lg={10} xl={8}>
             <Card className="shadow border-0">
               <Card.Header className="bg-success text-white py-4">
                 <div className="d-flex align-items-center justify-content-between">
                   <div className="d-flex align-items-center">
-                    <div className="bg-white bg-opacity-20 rounded-circle p-2 me-3">
-                      <Award size={24} />
-                    </div>
                     <div>
                       <h4 className="mb-0">Tour Guide Profile</h4>
                       <p className="mb-0 opacity-75">Manage your tour guide information</p>
@@ -164,7 +191,7 @@ const TourGuideProfilePage: React.FC = () => {
                   </div>
                   <div className="d-flex align-items-center">
                     {profile?.isVerified && (
-                      <div className="bg-white bg-opacity-20 rounded-pill px-3 py-1 me-3">
+                      <div className="bg-black bg-opacity-20 rounded-pill px-3 py-1 me-3">
                         <Star size={16} className="me-1" />
                         <small>Verified</small>
                       </div>
@@ -185,6 +212,62 @@ const TourGuideProfilePage: React.FC = () => {
               </Card.Header>
 
               <Card.Body className="p-4">
+                {/* Profile Image Section */}
+                <div className="text-center mb-4 pb-4 border-bottom">
+                  <div className="position-relative d-inline-block">
+                    <div 
+                      className="rounded-circle overflow-hidden border-3 border-success shadow-sm"
+                      style={{ width: '120px', height: '120px', cursor: isEditing ? 'pointer' : 'default' }}
+                      onClick={isEditing ? handleImageClick : undefined}
+                    >
+                      <Image
+                        src={imagePreview || profile?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || 'Guide')}&size=120&background=198754&color=fff`}
+                        alt="Profile"
+                        className="w-100 h-100 object-fit-cover"
+                      />
+                    </div>
+                    {isEditing && (
+                      <div className="position-absolute bottom-0 end-0">
+                        <Button
+                          variant="success"
+                          size="sm"
+                          className="rounded-circle p-2"
+                          onClick={handleImageClick}
+                          style={{ width: '36px', height: '36px' }}
+                        >
+                          <Camera size={16} />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  {isEditing && (
+                    <div className="mt-3">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageSelect}
+                        className="d-none"
+                      />
+                      <div className="d-flex gap-2 justify-content-center">
+                        <Button variant="outline-success" size="sm" onClick={handleImageClick}>
+                          <Upload size={14} className="me-1" />
+                          Choose Image
+                        </Button>
+                        {(selectedImage || imagePreview) && (
+                          <Button variant="outline-danger" size="sm" onClick={handleRemoveImage}>
+                            <X size={14} className="me-1" />
+                            Remove
+                          </Button>
+                        )}
+                      </div>
+                      <small className="text-muted d-block mt-2">
+                        Click to upload a new profile image (JPG, PNG, GIF - Max 5MB)
+                      </small>
+                    </div>
+                  )}
+                </div>
+
                 {/* Alerts */}
                 {error && (
                   <Alert variant="danger" className="mb-4">
@@ -198,8 +281,8 @@ const TourGuideProfilePage: React.FC = () => {
                   </Alert>
                 )}
 
-                <Row>
-                  <Col md={6}>
+                <Row className="g-4">
+                  <Col xs={12} md={6}>
                     <Form>
                       {/* Name */}
                       <Form.Group className="mb-4">
@@ -215,38 +298,6 @@ const TourGuideProfilePage: React.FC = () => {
                           className={!isEditing ? 'bg-light' : ''}
                           placeholder="Enter your full name"
                           required
-                        />
-                      </Form.Group>
-
-                      {/* Email */}
-                      <Form.Group className="mb-4">
-                        <Form.Label className="d-flex align-items-center">
-                          <Mail size={18} className="me-2 text-muted" />
-                          Email Address
-                        </Form.Label>
-                        <Form.Control
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => handleInputChange('email', e.target.value)}
-                          disabled={!isEditing}
-                          className={!isEditing ? 'bg-light' : ''}
-                          placeholder="Enter your email address"
-                        />
-                      </Form.Group>
-
-                      {/* Phone Number */}
-                      <Form.Group className="mb-4">
-                        <Form.Label className="d-flex align-items-center">
-                          <Phone size={18} className="me-2 text-muted" />
-                          Phone Number
-                        </Form.Label>
-                        <Form.Control
-                          type="tel"
-                          value={formData.phoneNumber}
-                          onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                          disabled={!isEditing}
-                          className={!isEditing ? 'bg-light' : ''}
-                          placeholder="Enter your phone number"
                         />
                       </Form.Group>
 
@@ -290,7 +341,7 @@ const TourGuideProfilePage: React.FC = () => {
                     </Form>
                   </Col>
 
-                  <Col md={6}>
+                  <Col xs={12} md={6}>
                     <Form>
                       {/* Bio */}
                       <Form.Group className="mb-4">
@@ -340,22 +391,9 @@ const TourGuideProfilePage: React.FC = () => {
                         </InputGroup>
                       </Form.Group>
 
-                      {/* Profile Image URL */}
-                      <Form.Group className="mb-4">
-                        <Form.Label>Profile Image URL</Form.Label>
-                        <Form.Control
-                          type="url"
-                          value={formData.profileImage}
-                          onChange={(e) => handleInputChange('profileImage', e.target.value)}
-                          disabled={!isEditing}
-                          className={!isEditing ? 'bg-light' : ''}
-                          placeholder="https://example.com/your-photo.jpg"
-                        />
-                      </Form.Group>
-
                       {/* Status Information */}
-                      <Row className="mb-4">
-                        <Col md={6}>
+                      <Row className="mb-4 g-3">
+                        <Col xs={12} sm={6}>
                           <Form.Group>
                             <Form.Label>Verification Status</Form.Label>
                             <Form.Control
@@ -366,7 +404,7 @@ const TourGuideProfilePage: React.FC = () => {
                             />
                           </Form.Group>
                         </Col>
-                        <Col md={6}>
+                        <Col xs={12} sm={6}>
                           <Form.Group>
                             <Form.Label>Rating</Form.Label>
                             <div className="d-flex align-items-center">
@@ -398,12 +436,12 @@ const TourGuideProfilePage: React.FC = () => {
 
                 {/* Action Buttons */}
                 {isEditing && (
-                  <div className="d-flex gap-2 pt-3 border-top">
+                  <div className="d-flex flex-column flex-sm-row gap-2 pt-4 border-top mt-4">
                     <Button
                       variant="success"
                       onClick={handleSave}
                       disabled={isSaving}
-                      className="d-flex align-items-center"
+                      className="d-flex align-items-center justify-content-center flex-fill"
                     >
                       {isSaving ? (
                         <>
@@ -421,7 +459,7 @@ const TourGuideProfilePage: React.FC = () => {
                       variant="outline-secondary"
                       onClick={handleCancel}
                       disabled={isSaving}
-                      className="d-flex align-items-center"
+                      className="d-flex align-items-center justify-content-center flex-fill"
                     >
                       <X size={16} className="me-2" />
                       Cancel

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Row, Col, Card, Form, Button, Alert, Modal, Badge, Table } from 'react-bootstrap';
-import { FileText, Upload, AlertCircle, CheckCircle, Clock, Eye, UserPlus } from 'lucide-react';
+import { Container, Row, Col, Card, Form, Button, Alert, Modal, Badge, Table, Image } from 'react-bootstrap';
+import { FileText, Upload, AlertCircle, CheckCircle, Clock, Eye, UserPlus, X, Shield } from 'lucide-react';
 import { verificationService } from '../services/api';
 import type { VerificationStatus, TourGuideVerificationRequest, CreateVerificationRequest } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -23,9 +23,9 @@ const UserTourGuideApplicationPage: React.FC = () => {
     phoneNumber: user?.phoneNumber || '',
     email: user?.email || '',
     address: '',
-    identityCardFrontUrl: '',
-    identityCardBackUrl: '',
-    tourGuideLicenseUrl: '',
+    identityCardFrontUrl: undefined,
+    identityCardBackUrl: undefined,
+    tourGuideLicenseUrl: undefined,
     licenseNumber: '',
     issuingAuthority: '',
     licenseIssueDate: '',
@@ -41,29 +41,26 @@ const UserTourGuideApplicationPage: React.FC = () => {
   const [identityCardFrontFile, setIdentityCardFrontFile] = useState<File | null>(null);
   const [identityCardBackFile, setIdentityCardBackFile] = useState<File | null>(null);
   const [licenseFile, setLicenseFile] = useState<File | null>(null);
+  
+  // Image preview states
+  const [identityCardFrontPreview, setIdentityCardFrontPreview] = useState<string | null>(null);
+  const [identityCardBackPreview, setIdentityCardBackPreview] = useState<string | null>(null);
+  const [licensePreview, setLicensePreview] = useState<string | null>(null);
 
   // File upload handlers
-  const handleFileUpload = async (file: File): Promise<string> => {
-    // In a real app, you would upload to a cloud service like AWS S3, Cloudinary, etc.
-    // For now, we'll create a mock URL
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const mockUrl = `https://example.com/uploads/${Date.now()}_${file.name}`;
-        resolve(mockUrl);
-      }, 1000);
-    });
-  };
 
   const handleIdentityCardFrontChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setIdentityCardFrontFile(file);
-      try {
-        const url = await handleFileUpload(file);
-        setFormData({...formData, identityCardFrontUrl: url});
-      } catch {
-        setError('Failed to upload identity card front image');
-      }
+      setFormData({...formData, identityCardFrontUrl: file});
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setIdentityCardFrontPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -71,12 +68,14 @@ const UserTourGuideApplicationPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       setIdentityCardBackFile(file);
-      try {
-        const url = await handleFileUpload(file);
-        setFormData({...formData, identityCardBackUrl: url});
-      } catch {
-        setError('Failed to upload identity card back image');
-      }
+      setFormData({...formData, identityCardBackUrl: file});
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setIdentityCardBackPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -84,12 +83,14 @@ const UserTourGuideApplicationPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       setLicenseFile(file);
-      try {
-        const url = await handleFileUpload(file);
-        setFormData({...formData, tourGuideLicenseUrl: url});
-      } catch {
-        setError('Failed to upload license file');
-      }
+      setFormData({...formData, tourGuideLicenseUrl: file});
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setLicensePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -157,9 +158,9 @@ const UserTourGuideApplicationPage: React.FC = () => {
         phoneNumber: user?.phoneNumber || '',
         email: user?.email || '',
         address: '',
-        identityCardFrontUrl: '',
-        identityCardBackUrl: '',
-        tourGuideLicenseUrl: '',
+        identityCardFrontUrl: undefined,
+        identityCardBackUrl: undefined,
+        tourGuideLicenseUrl: undefined,
         licenseNumber: '',
         issuingAuthority: '',
         licenseIssueDate: '',
@@ -174,6 +175,10 @@ const UserTourGuideApplicationPage: React.FC = () => {
       setIdentityCardFrontFile(null);
       setIdentityCardBackFile(null);
       setLicenseFile(null);
+      // Reset preview states
+      setIdentityCardFrontPreview(null);
+      setIdentityCardBackPreview(null);
+      setLicensePreview(null);
     } catch (err: unknown) {
       console.error('Submission error:', err); // Debug log
       const error = err as { 
@@ -385,133 +390,293 @@ const UserTourGuideApplicationPage: React.FC = () => {
       </Row>
 
       {/* Application Form Modal */}
-      <Modal show={showForm} onHide={() => setShowForm(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <UserPlus size={20} className="me-2" />
-            Tour Guide Application
+      <Modal show={showForm} onHide={() => setShowForm(false)} size="lg" className="tour-guide-modal">
+        <Modal.Header closeButton className="bg-gradient" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+          <Modal.Title className="text-white d-flex align-items-center">
+            <div className="bg-white bg-opacity-20 rounded-circle p-2 me-3">
+              <UserPlus size={24} className="text-white" />
+            </div>
+            <div>
+              <h4 className="mb-0">Tour Guide Application</h4>
+              <small className="opacity-75">Join our community of professional guides</small>
+            </div>
           </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          <Alert variant="info" className="mb-4">
-            <strong>Important:</strong> Once approved, your account role will be changed to Tour Guide and you'll gain access to tour guide features.
-          </Alert>
+        <Modal.Body className="p-4" style={{ backgroundColor: '#f8f9fa' }}>
+          <div className="mb-4 p-3 rounded-3 border-start border-4 border-info bg-white shadow-sm">
+            <div className="d-flex align-items-start">
+              <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                <Shield size={20} className="text-primary" />
+              </div>
+              <div>
+                <h6 className="text-primary mb-1">Important Information</h6>
+                <p className="mb-0 text-muted">Once approved, your account will be upgraded to Tour Guide status, unlocking professional features and opportunities.</p>
+              </div>
+            </div>
+          </div>
           
           <Form onSubmit={handleSubmit}>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Full Name *</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData.fullName}
-                    onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                    required
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Identity Number *</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData.identityNumber}
-                    onChange={(e) => setFormData({...formData, identityNumber: e.target.value})}
-                    required
-                    placeholder="ID card or passport number"
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+            {/* Personal Information Section */}
+            <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+              <h5 className="text-primary mb-3 d-flex align-items-center">
+                <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                  <UserPlus size={18} />
+                </div>
+                Personal Information
+              </h5>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold text-dark">Full Name *</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.fullName}
+                      onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                      required
+                      className="border-2"
+                      style={{ borderRadius: '10px' }}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold text-dark">Identity Number *</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.identityNumber}
+                      onChange={(e) => setFormData({...formData, identityNumber: e.target.value})}
+                      required
+                      placeholder="ID card or passport number"
+                      className="border-2"
+                      style={{ borderRadius: '10px' }}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
 
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Phone Number *</Form.Label>
-                  <Form.Control
-                    type="tel"
-                    value={formData.phoneNumber}
-                    onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
-                    required
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Email *</Form.Label>
-                  <Form.Control
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    required
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold text-dark">Phone Number *</Form.Label>
+                    <Form.Control
+                      type="tel"
+                      value={formData.phoneNumber}
+                      onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+                      required
+                      className="border-2"
+                      style={{ borderRadius: '10px' }}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold text-dark">Email *</Form.Label>
+                    <Form.Control
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      required
+                      className="border-2"
+                      style={{ borderRadius: '10px' }}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Address</Form.Label>
-              <Form.Control
-                type="text"
-                value={formData.address}
-                onChange={(e) => setFormData({...formData, address: e.target.value})}
-                placeholder="Your current address"
-              />
-            </Form.Group>
+              <Form.Group className="mb-0">
+                <Form.Label className="fw-semibold text-dark">Address</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={formData.address}
+                  onChange={(e) => setFormData({...formData, address: e.target.value})}
+                  placeholder="Your current address"
+                  className="border-2"
+                  style={{ borderRadius: '10px' }}
+                />
+              </Form.Group>
+            </div>
 
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Identity Card Front Image</Form.Label>
-                  <Form.Control
-                    type="file"
-                    accept="image/*"
-                    onChange={handleIdentityCardFrontChange}
-                  />
-                  <Form.Text className="text-muted">
-                    Upload a clear photo of your ID card front side
-                  </Form.Text>
-                  {identityCardFrontFile && (
-                    <div className="mt-2">
-                      <small className="text-success">
-                        ✓ {identityCardFrontFile.name} uploaded
-                      </small>
+            {/* Document Upload Section */}
+            <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+              <h5 className="text-primary mb-3 d-flex align-items-center">
+                <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                  <FileText size={18} />
+                </div>
+                Required Documents
+              </h5>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold text-dark">Identity Card Front Image *</Form.Label>
+                    <div 
+                      className="border-2 border-dashed rounded-3 p-4 text-center transition-all" 
+                      style={{ 
+                        minHeight: '160px', 
+                        borderColor: identityCardFrontFile ? '#28a745' : '#e9ecef',
+                        backgroundColor: identityCardFrontFile ? '#f8fff9' : '#fafbfc'
+                      }}
+                    >
+                      {identityCardFrontPreview ? (
+                        <div className="position-relative d-inline-block">
+                          <Image
+                            src={identityCardFrontPreview}
+                            alt="Identity Card Front Preview"
+                            className="img-thumbnail shadow-sm"
+                            style={{ maxWidth: '200px', maxHeight: '150px', borderRadius: '12px' }}
+                          />
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            className="position-absolute top-0 end-0 rounded-circle shadow-sm"
+                            style={{ width: '32px', height: '32px', transform: 'translate(8px, -8px)' }}
+                            onClick={() => {
+                              setIdentityCardFrontFile(null);
+                              setIdentityCardFrontPreview(null);
+                              setFormData({...formData, identityCardFrontUrl: undefined});
+                            }}
+                          >
+                            <X size={14} />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="bg-primary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                            <Upload size={32} className="text-primary" />
+                          </div>
+                          <p className="mb-1 fw-semibold text-dark">Click to upload ID card front</p>
+                          <small className="text-muted">Clear photo required • JPG, PNG formats</small>
+                        </div>
+                      )}
+                    </div>
+                    <Form.Control
+                      type="file"
+                      accept="image/*"
+                      onChange={handleIdentityCardFrontChange}
+                      className="mt-3 border-2"
+                      style={{ borderRadius: '10px' }}
+                      required
+                    />
+                    {identityCardFrontFile && (
+                      <div className="mt-2 p-2 bg-success bg-opacity-10 rounded-2">
+                        <small className="text-success d-flex align-items-center">
+                          <CheckCircle size={14} className="me-1" />
+                          {identityCardFrontFile.name} uploaded successfully
+                        </small>
+                      </div>
+                    )}
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold text-dark">Identity Card Back Image *</Form.Label>
+                    <div 
+                      className="border-2 border-dashed rounded-3 p-4 text-center transition-all" 
+                      style={{ 
+                        minHeight: '160px', 
+                        borderColor: identityCardBackFile ? '#28a745' : '#e9ecef',
+                        backgroundColor: identityCardBackFile ? '#f8fff9' : '#fafbfc'
+                      }}
+                    >
+                      {identityCardBackPreview ? (
+                        <div className="position-relative d-inline-block">
+                          <Image
+                            src={identityCardBackPreview}
+                            alt="Identity Card Back Preview"
+                            className="img-thumbnail shadow-sm"
+                            style={{ maxWidth: '200px', maxHeight: '150px', borderRadius: '12px' }}
+                          />
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            className="position-absolute top-0 end-0 rounded-circle shadow-sm"
+                            style={{ width: '32px', height: '32px', transform: 'translate(8px, -8px)' }}
+                            onClick={() => {
+                              setIdentityCardBackFile(null);
+                              setIdentityCardBackPreview(null);
+                              setFormData({...formData, identityCardBackUrl: undefined});
+                            }}
+                          >
+                            <X size={14} />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="bg-primary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                            <Upload size={32} className="text-primary" />
+                          </div>
+                          <p className="mb-1 fw-semibold text-dark">Click to upload ID card back</p>
+                          <small className="text-muted">Clear photo required • JPG, PNG formats</small>
+                        </div>
+                      )}
+                    </div>
+                    <Form.Control
+                      type="file"
+                      accept="image/*"
+                      onChange={handleIdentityCardBackChange}
+                      className="mt-3 border-2"
+                      style={{ borderRadius: '10px' }}
+                      required
+                    />
+                    {identityCardBackFile && (
+                      <div className="mt-2 p-2 bg-success bg-opacity-10 rounded-2">
+                        <small className="text-success d-flex align-items-center">
+                          <CheckCircle size={14} className="me-1" />
+                          {identityCardBackFile.name} uploaded successfully
+                        </small>
+                      </div>
+                    )}
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Form.Group className="mb-0">
+                <Form.Label className="fw-semibold text-dark">Tour Guide License (if any)</Form.Label>
+                <div 
+                  className="border-2 border-dashed rounded-3 p-4 text-center transition-all" 
+                  style={{ 
+                    minHeight: '160px', 
+                    borderColor: licenseFile ? '#28a745' : '#e9ecef',
+                    backgroundColor: licenseFile ? '#f8fff9' : '#fafbfc'
+                  }}
+                >
+                  {licensePreview ? (
+                    <div className="position-relative d-inline-block">
+                      <Image
+                        src={licensePreview}
+                        alt="License Preview"
+                        className="img-thumbnail shadow-sm"
+                        style={{ maxWidth: '200px', maxHeight: '150px', borderRadius: '12px' }}
+                      />
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        className="position-absolute top-0 end-0 rounded-circle shadow-sm"
+                        style={{ width: '32px', height: '32px', transform: 'translate(8px, -8px)' }}
+                        onClick={() => {
+                          setLicenseFile(null);
+                          setLicensePreview(null);
+                          setFormData({...formData, tourGuideLicenseUrl: undefined});
+                        }}
+                      >
+                        <X size={14} />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="bg-primary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                        <Upload size={32} className="text-primary" />
+                      </div>
+                      <p className="mb-1 fw-semibold text-dark">Click to upload license document</p>
+                      <small className="text-muted">Optional • JPG, PNG formats</small>
                     </div>
                   )}
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Identity Card Back Image</Form.Label>
-                  <Form.Control
-                    type="file"
-                    accept="image/*"
-                    onChange={handleIdentityCardBackChange}
-                  />
-                  <Form.Text className="text-muted">
-                    Upload a clear photo of your ID card back side
-                  </Form.Text>
-                  {identityCardBackFile && (
-                    <div className="mt-2">
-                      <small className="text-success">
-                        ✓ {identityCardBackFile.name} uploaded
-                      </small>
-                    </div>
-                  )}
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Tour Guide License (if any)</Form.Label>
+                </div>
               <Form.Control
                 type="file"
                 accept="image/*,.pdf"
                 onChange={handleLicenseFileChange}
+                className="mt-2"
               />
-              <Form.Text className="text-muted">
-                If you have an official tour guide license, upload it here (image or PDF)
-              </Form.Text>
               {licenseFile && (
                 <div className="mt-2">
                   <small className="text-success">
@@ -521,196 +686,498 @@ const UserTourGuideApplicationPage: React.FC = () => {
               )}
             </Form.Group>
 
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>License Number</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData.licenseNumber}
-                    onChange={(e) => setFormData({...formData, licenseNumber: e.target.value})}
-                    placeholder="License number if applicable"
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Issuing Authority</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData.issuingAuthority}
-                    onChange={(e) => setFormData({...formData, issuingAuthority: e.target.value})}
-                    placeholder="Who issued the license"
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+            {/* License Information Section */}
+            <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+              <h5 className="text-primary mb-3 d-flex align-items-center">
+                <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                  <Shield size={18} />
+                </div>
+                License Information
+              </h5>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold text-dark">License Number</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.licenseNumber}
+                      onChange={(e) => setFormData({...formData, licenseNumber: e.target.value})}
+                      placeholder="License number if applicable"
+                      className="border-2"
+                      style={{ borderRadius: '10px' }}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold text-dark">Issuing Authority</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.issuingAuthority}
+                      onChange={(e) => setFormData({...formData, issuingAuthority: e.target.value})}
+                      placeholder="Who issued the license"
+                      className="border-2"
+                      style={{ borderRadius: '10px' }}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+            </div>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Experience *</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={4}
-                value={formData.experience}
-                onChange={(e) => setFormData({...formData, experience: e.target.value})}
-                placeholder="Describe your relevant experience, background, and why you want to become a tour guide..."
-                required
-              />
-            </Form.Group>
+            {/* Professional Qualifications Section */}
+            <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+              <h5 className="text-primary mb-3 d-flex align-items-center">
+                <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                  <FileText size={18} />
+                </div>
+                Professional Qualifications
+              </h5>
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-semibold text-dark">Experience *</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={4}
+                  value={formData.experience}
+                  onChange={(e) => setFormData({...formData, experience: e.target.value})}
+                  placeholder="Describe your relevant experience, background, and why you want to become a tour guide..."
+                  required
+                  className="border-2"
+                  style={{ borderRadius: '10px' }}
+                />
+              </Form.Group>
 
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Languages *</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData.languages}
-                    onChange={(e) => setFormData({...formData, languages: e.target.value})}
-                    placeholder="e.g., English, Vietnamese, French"
-                    required
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Specializations</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData.specializations}
-                    onChange={(e) => setFormData({...formData, specializations: e.target.value})}
-                    placeholder="e.g., Historical tours, Adventure tourism, Cultural experiences"
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold text-dark">Languages *</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.languages}
+                      onChange={(e) => setFormData({...formData, languages: e.target.value})}
+                      placeholder="e.g., English, Vietnamese, French"
+                      required
+                      className="border-2"
+                      style={{ borderRadius: '10px' }}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold text-dark">Specializations</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.specializations}
+                      onChange={(e) => setFormData({...formData, specializations: e.target.value})}
+                      placeholder="e.g., Historical tours, Adventure tourism, Cultural experiences"
+                      className="border-2"
+                      style={{ borderRadius: '10px' }}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Additional Notes</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                value={formData.additionalNotes}
-                onChange={(e) => setFormData({...formData, additionalNotes: e.target.value})}
-                placeholder="Any additional information you'd like to share..."
-              />
-            </Form.Group>
+              <Form.Group className="mb-0">
+                <Form.Label className="fw-semibold text-dark">Additional Notes</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={formData.additionalNotes}
+                  onChange={(e) => setFormData({...formData, additionalNotes: e.target.value})}
+                  placeholder="Any additional information you'd like to share..."
+                  className="border-2"
+                  style={{ borderRadius: '10px' }}
+                />
+              </Form.Group>
+            </div>
 
-            <div className="d-flex justify-content-end gap-2">
-              <Button variant="secondary" onClick={() => setShowForm(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" variant="primary" disabled={submitting}>
-                {submitting ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" />
-                    Submitting Application...
-                  </>
-                ) : (
-                  <>
-                    <Upload size={16} className="me-2" />
-                    Submit Application
-                  </>
-                )}
-              </Button>
+            {/* Form Actions */}
+            <div className="d-flex justify-content-between align-items-center pt-3 border-top">
+              <small className="text-muted">
+                <AlertCircle size={16} className="me-1" />
+                All required fields must be completed
+              </small>
+              <div className="d-flex gap-3">
+                <Button 
+                  variant="outline-secondary" 
+                  onClick={() => setShowForm(false)}
+                  className="px-4"
+                  style={{ borderRadius: '25px' }}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  variant="primary" 
+                  disabled={submitting}
+                  className="px-4 shadow-sm"
+                  style={{ 
+                    borderRadius: '25px',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    border: 'none'
+                  }}
+                >
+                  {submitting ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" />
+                      Submitting Application...
+                    </>
+                  ) : (
+                    <>
+                      <Upload size={16} className="me-2" />
+                      Submit Application
+                    </>
+                  )}
+                </Button>
+              </div>
+              </div>
             </div>
           </Form>
         </Modal.Body>
       </Modal>
 
       {/* Application Details Modal */}
-      <Modal show={showDetails} onHide={() => setShowDetails(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Application Details</Modal.Title>
+      <Modal show={showDetails} onHide={() => setShowDetails(false)} size="lg" className="tour-guide-details-modal">
+        <Modal.Header closeButton className="bg-gradient border-0" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+          <Modal.Title className="text-white d-flex align-items-center">
+            <div className="bg-white bg-opacity-20 rounded-circle p-2 me-3">
+              <Eye size={24} className="text-white" />
+            </div>
+            <div>
+              <h4 className="mb-0">Application Details</h4>
+              <small className="opacity-75">Review your submission</small>
+            </div>
+          </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className="p-4" style={{ backgroundColor: '#f8f9fa' }}>
           {selectedRequest && (
             <div>
-              <Row className="mb-3">
-                <Col md={6}>
-                  <strong>Status:</strong>
-                  <div className="mt-1">{getStatusBadge(selectedRequest.status)}</div>
-                </Col>
-                <Col md={6}>
-                  <strong>Submitted:</strong>
-                  <div className="mt-1">{formatDate(selectedRequest.createdAt)}</div>
-                </Col>
-              </Row>
+              {/* Status Overview */}
+              <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+                <h5 className="text-primary mb-3 d-flex align-items-center">
+                  <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                    <Clock size={18} />
+                  </div>
+                  Application Status
+                </h5>
+                <Row>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <strong className="text-dark">Current Status:</strong>
+                      <div className="mt-1">{getStatusBadge(selectedRequest.status)}</div>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <strong className="text-dark">Submitted:</strong>
+                      <div className="mt-1 text-muted">{formatDate(selectedRequest.createdAt)}</div>
+                    </div>
+                  </Col>
+                </Row>
+              </div>
 
-              <Row className="mb-3">
-                <Col md={6}>
-                  <strong>Full Name:</strong>
-                  <div className="mt-1">{selectedRequest.fullName}</div>
-                </Col>
-                <Col md={6}>
-                  <strong>Identity Number:</strong>
-                  <div className="mt-1">{selectedRequest.identityNumber}</div>
-                </Col>
-              </Row>
+              {/* Personal Information */}
+              <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+                <h5 className="text-primary mb-3 d-flex align-items-center">
+                  <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                    <UserPlus size={18} />
+                  </div>
+                  Personal Information
+                </h5>
+                <Row>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <strong className="text-dark">Full Name:</strong>
+                      <div className="mt-1 text-muted">{selectedRequest.fullName}</div>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <strong className="text-dark">Identity Number:</strong>
+                      <div className="mt-1 text-muted">{selectedRequest.identityNumber}</div>
+                    </div>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <strong className="text-dark">Phone:</strong>
+                      <div className="mt-1 text-muted">{selectedRequest.phoneNumber}</div>
+                    </div>
+                  </Col>
+                  <Col md={6}>
+                    <div className="mb-3">
+                      <strong className="text-dark">Email:</strong>
+                      <div className="mt-1 text-muted">{selectedRequest.email}</div>
+                    </div>
+                  </Col>
+                </Row>
+              </div>
 
-              <Row className="mb-3">
-                <Col md={6}>
-                  <strong>Phone:</strong>
-                  <div className="mt-1">{selectedRequest.phoneNumber}</div>
-                </Col>
-                <Col md={6}>
-                  <strong>Email:</strong>
-                  <div className="mt-1">{selectedRequest.email}</div>
-                </Col>
-              </Row>
-
+              {/* Address */}
               {selectedRequest.address && (
-                <div className="mb-3">
-                  <strong>Address:</strong>
-                  <div className="mt-1">{selectedRequest.address}</div>
+                <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+                  <h6 className="text-primary mb-2">Address</h6>
+                  <p className="text-muted mb-0">{selectedRequest.address}</p>
                 </div>
               )}
 
-              {selectedRequest.experience && (
-                <div className="mb-3">
-                  <strong>Experience:</strong>
-                  <div className="mt-1" style={{ whiteSpace: 'pre-wrap' }}>{selectedRequest.experience}</div>
+              {/* Professional Qualifications */}
+              {(selectedRequest.experience || selectedRequest.languages || selectedRequest.specializations) && (
+                <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+                  <h5 className="text-primary mb-3 d-flex align-items-center">
+                    <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                      <FileText size={18} />
+                    </div>
+                    Professional Qualifications
+                  </h5>
+                  
+                  {selectedRequest.experience && (
+                    <div className="mb-3">
+                      <strong className="text-dark">Experience:</strong>
+                      <div className="mt-2 p-3 bg-light rounded-2" style={{ whiteSpace: 'pre-wrap' }}>
+                        {selectedRequest.experience}
+                      </div>
+                    </div>
+                  )}
+
+                  <Row>
+                    {selectedRequest.languages && (
+                      <Col md={6}>
+                        <div className="mb-3">
+                          <strong className="text-dark">Languages:</strong>
+                          <div className="mt-1">
+                            {selectedRequest.languages.split(',').map((lang: string, index: number) => (
+                              <Badge key={index} bg="primary" className="me-1 mb-1">
+                                {lang.trim()}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </Col>
+                    )}
+
+                    {selectedRequest.specializations && (
+                      <Col md={6}>
+                        <div className="mb-3">
+                          <strong className="text-dark">Specializations:</strong>
+                          <div className="mt-1">
+                            {selectedRequest.specializations.split(',').map((spec: string, index: number) => (
+                              <Badge key={index} bg="secondary" className="me-1 mb-1">
+                                {spec.trim()}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </Col>
+                    )}
+                  </Row>
                 </div>
               )}
 
-              {selectedRequest.languages && (
-                <div className="mb-3">
-                  <strong>Languages:</strong>
-                  <div className="mt-1">{selectedRequest.languages}</div>
+              {/* Document Images Section */}
+              {(selectedRequest.identityCardFrontUrl || selectedRequest.identityCardBackUrl || selectedRequest.tourGuideLicenseUrl) && (
+                <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+                  <h5 className="text-primary mb-3 d-flex align-items-center">
+                    <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                      <FileText size={18} />
+                    </div>
+                    Uploaded Documents
+                  </h5>
+                  <Row className="g-3">
+                    {selectedRequest.identityCardFrontUrl && (
+                      <Col md={4}>
+                        <Card className="h-100 border-0 shadow-sm">
+                          <Card.Header className="bg-light border-0 py-2">
+                            <small className="fw-semibold text-dark">Identity Card (Front)</small>
+                          </Card.Header>
+                          <Card.Body className="p-2">
+                            <Image
+                              src={selectedRequest.identityCardFrontUrl}
+                              alt="Identity Card Front"
+                              className="img-fluid rounded shadow-sm"
+                              style={{ 
+                                width: '100%', 
+                                height: '180px', 
+                                objectFit: 'cover', 
+                                cursor: 'pointer',
+                                transition: 'transform 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                              onClick={() => window.open(selectedRequest.identityCardFrontUrl, '_blank')}
+                            />
+                            <small className="text-muted d-block mt-2 text-center">
+                              <Eye size={12} className="me-1" />
+                              Click to view full size
+                            </small>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    )}
+                    {selectedRequest.identityCardBackUrl && (
+                      <Col md={4}>
+                        <Card className="h-100 border-0 shadow-sm">
+                          <Card.Header className="bg-light border-0 py-2">
+                            <small className="fw-semibold text-dark">Identity Card (Back)</small>
+                          </Card.Header>
+                          <Card.Body className="p-2">
+                            <Image
+                              src={selectedRequest.identityCardBackUrl}
+                              alt="Identity Card Back"
+                              className="img-fluid rounded shadow-sm"
+                              style={{ 
+                                width: '100%', 
+                                height: '180px', 
+                                objectFit: 'cover', 
+                                cursor: 'pointer',
+                                transition: 'transform 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                              onClick={() => window.open(selectedRequest.identityCardBackUrl, '_blank')}
+                            />
+                            <small className="text-muted d-block mt-2 text-center">
+                              <Eye size={12} className="me-1" />
+                              Click to view full size
+                            </small>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    )}
+                    {selectedRequest.tourGuideLicenseUrl && (
+                      <Col md={4}>
+                        <Card className="h-100 border-0 shadow-sm">
+                          <Card.Header className="bg-light border-0 py-2">
+                            <small className="fw-semibold text-dark">Tour Guide License</small>
+                          </Card.Header>
+                          <Card.Body className="p-2">
+                            <Image
+                              src={selectedRequest.tourGuideLicenseUrl}
+                              alt="Tour Guide License"
+                              className="img-fluid rounded shadow-sm"
+                              style={{ 
+                                width: '100%', 
+                                height: '180px', 
+                                objectFit: 'cover', 
+                                cursor: 'pointer',
+                                transition: 'transform 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                              onClick={() => window.open(selectedRequest.tourGuideLicenseUrl, '_blank')}
+                            />
+                            <small className="text-muted d-block mt-2 text-center">
+                              <Eye size={12} className="me-1" />
+                              Click to view full size
+                            </small>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    )}
+                  </Row>
                 </div>
               )}
 
-              {selectedRequest.specializations && (
-                <div className="mb-3">
-                  <strong>Specializations:</strong>
-                  <div className="mt-1">{selectedRequest.specializations}</div>
+              {/* License Details */}
+              {(selectedRequest.licenseNumber || selectedRequest.issuingAuthority) && (
+                <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+                  <h5 className="text-primary mb-3 d-flex align-items-center">
+                    <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                      <Shield size={18} />
+                    </div>
+                    License Information
+                  </h5>
+                  <Row>
+                    {selectedRequest.licenseNumber && (
+                      <Col md={6}>
+                        <div className="mb-3">
+                          <strong className="text-dark">License Number:</strong>
+                          <div className="mt-1 text-muted">{selectedRequest.licenseNumber}</div>
+                        </div>
+                      </Col>
+                    )}
+                    {selectedRequest.issuingAuthority && (
+                      <Col md={6}>
+                        <div className="mb-3">
+                          <strong className="text-dark">Issuing Authority:</strong>
+                          <div className="mt-1 text-muted">{selectedRequest.issuingAuthority}</div>
+                        </div>
+                      </Col>
+                    )}
+                    {selectedRequest.licenseIssueDate && (
+                      <Col md={6}>
+                        <div className="mb-3">
+                          <strong className="text-dark">Issue Date:</strong>
+                          <div className="mt-1 text-muted">{formatDate(selectedRequest.licenseIssueDate)}</div>
+                        </div>
+                      </Col>
+                    )}
+                    {selectedRequest.licenseExpiryDate && (
+                      <Col md={6}>
+                        <div className="mb-3">
+                          <strong className="text-dark">Expiry Date:</strong>
+                          <div className="mt-1 text-muted">{formatDate(selectedRequest.licenseExpiryDate)}</div>
+                        </div>
+                      </Col>
+                    )}
+                  </Row>
                 </div>
               )}
 
-              {selectedRequest.reviewedByAdminName && (
-                <div className="mb-3">
-                  <strong>Reviewed By:</strong>
-                  <div className="mt-1">{selectedRequest.reviewedByAdminName}</div>
+              {/* Admin Review Section */}
+              {(selectedRequest.reviewedByAdminName || selectedRequest.adminNotes) && (
+                <div className="bg-white rounded-3 p-4 mb-4 shadow-sm border">
+                  <h5 className="text-primary mb-3 d-flex align-items-center">
+                    <div className="bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                      <Eye size={18} />
+                    </div>
+                    Admin Review
+                  </h5>
+                  {selectedRequest.reviewedByAdminName && (
+                    <div className="mb-3">
+                      <strong className="text-dark">Reviewed By:</strong>
+                      <div className="mt-1 text-muted">{selectedRequest.reviewedByAdminName}</div>
+                    </div>
+                  )}
+                  {selectedRequest.adminNotes && (
+                    <div className="mb-0">
+                      <strong className="text-dark">Review Notes:</strong>
+                      <div className="mt-2 p-3 rounded-2" style={{ 
+                        backgroundColor: selectedRequest.status === 'Approved' ? '#d4edda' : '#fff3cd',
+                        whiteSpace: 'pre-wrap'
+                      }}>
+                        {selectedRequest.adminNotes}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
-              {selectedRequest.adminNotes && (
-                <Alert variant={selectedRequest.status === 'Approved' ? 'success' : 'warning'}>
-                  <strong>Review Notes:</strong>
-                  <div className="mt-1" style={{ whiteSpace: 'pre-wrap' }}>{selectedRequest.adminNotes}</div>
-                </Alert>
-              )}
-
+              {/* Success Message */}
               {selectedRequest.status === 'Approved' && (
-                <Alert variant="success">
-                  <CheckCircle size={16} className="me-2" />
-                  <strong>Congratulations!</strong> Your application has been approved. Your account has been upgraded to Tour Guide status.
-                </Alert>
+                <div className="bg-success bg-opacity-10 border border-success rounded-3 p-4 mb-4">
+                  <div className="d-flex align-items-center text-success">
+                    <div className="bg-success bg-opacity-20 rounded-circle p-2 me-3">
+                      <CheckCircle size={20} />
+                    </div>
+                    <div>
+                      <h6 className="mb-1 text-success">Congratulations!</h6>
+                      <p className="mb-0">Your application has been approved. Your account has been upgraded to Tour Guide status.</p>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           )}
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDetails(false)}>
+        <Modal.Footer className="border-0 bg-light">
+          <Button 
+            variant="outline-primary" 
+            onClick={() => setShowDetails(false)}
+            className="px-4"
+            style={{ borderRadius: '25px' }}
+          >
+            <X size={16} className="me-2" />
             Close
           </Button>
         </Modal.Footer>

@@ -1,7 +1,7 @@
 export interface User {
-  id: number;  // Changed from string to number to match backend
+  id: number;
   email: string;
-  name: string;  // Changed from fullName to name to match backend
+  name: string;
   phoneNumber?: string;
   nationality?: string;
   preferredLanguage?: string;
@@ -9,6 +9,7 @@ export interface User {
   createdAt: string;
   lastLoginAt?: string;
   isActive: boolean;
+  profileImage?: string;
 }
 
 export interface Location {
@@ -21,6 +22,9 @@ export interface Location {
   isActive: boolean;
   createdAt: string;
   updatedAt?: string;
+  latitude?: number;
+  longitude?: number;
+  imageUrl?: string;
 }
 
 export interface CreateLocationDto {
@@ -29,6 +33,7 @@ export interface CreateLocationDto {
   placeType?: string;
   rating?: number;
   userReview?: string;
+  imageUrl?: File;
 }
 
 export interface UpdateLocationDto {
@@ -37,6 +42,7 @@ export interface UpdateLocationDto {
   placeType?: string;
   rating?: number;
   userReview?: string;
+  imageUrl?: File;
 }
 
 export interface LocationSearchDto {
@@ -135,9 +141,9 @@ export interface CreateVerificationRequest {
   phoneNumber: string;
   email: string;
   address?: string;
-  identityCardFrontUrl?: string;
-  identityCardBackUrl?: string;
-  tourGuideLicenseUrl?: string;
+  identityCardFrontUrl?: File;
+  identityCardBackUrl?: File;
+  tourGuideLicenseUrl?: File;
   licenseNumber?: string;
   issuingAuthority?: string;
   licenseIssueDate?: string;
