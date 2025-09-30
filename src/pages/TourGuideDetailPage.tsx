@@ -339,7 +339,7 @@ const TourGuideDetailPage: React.FC = () => {
 
         {/* Sidebar */}
         <Col lg={4}>
-          <Card className="shadow-sm sticky-top" style={{ top: '100px' }}>
+          <Card className="shadow-sm" style={{ top: '100px' }}>
             <Card.Body>
               <div className="text-center mb-3">
                 <h5 className="fw-bold text-primary">

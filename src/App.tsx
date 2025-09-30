@@ -1,5 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
+import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
 import PublicRoute from './components/PublicRoute';
 import ProtectedRoute from './components/ProtectedRoute';
 import RoleBasedRoute from './components/RoleBasedRoute';
@@ -32,6 +34,7 @@ import AdminAnalytics from './pages/AdminAnalytics';
 import TourGuideVerificationPage from './pages/TourGuideVerificationPage';
 import StaffVerificationPage from './pages/StaffVerificationPage';
 import UserTourGuideApplicationPage from './pages/UserTourGuideApplicationPage';
+import LocationManagement from './pages/LocationManagement';
 import './App.css';
 
 function App() {
@@ -42,6 +45,7 @@ function App() {
     return <LoadingSpinner />;
   }  return (
     <div className="App">
+      <ScrollToTop />
       <Header />
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -115,6 +119,16 @@ function App() {
             <ProtectedRoute>
               <RoleBasedRoute allowedRoles={['Staff']}>
                 <StaffDashboard />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/staff/locations" 
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['Staff', 'Admin']}>
+                <LocationManagement />
               </RoleBasedRoute>
             </ProtectedRoute>
           } 
@@ -217,6 +231,9 @@ function App() {
       
       {/* Chatbot floating button - available on all pages */}
       <SimpleChatbotButton />
+      
+      {/* Footer - available on all pages */}
+      <Footer />
     </div>
   );
 }

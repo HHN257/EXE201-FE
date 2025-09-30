@@ -23,10 +23,10 @@ const StaffDashboard: React.FC = () => {
       color: 'warning'
     },
     {
-      title: 'Content Management',
-      description: 'Manage destinations and services',
+      title: 'Location Management',
+      description: 'Manage destinations and places',
       icon: <FileText size={24} />,
-      link: '/staff/content',
+      link: '/staff/locations',
       color: 'info'
     },
     {

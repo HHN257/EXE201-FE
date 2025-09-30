@@ -241,7 +241,10 @@ const DestinationsPage: React.FC = () => {
                       variant="primary" 
                       size="sm" 
                       className="w-100"
-                      onClick={() => navigate(`/destinations/${location.id}`)}
+                      onClick={() => {
+                        navigate(`/destinations/${location.id}`);
+                        window.scrollTo(0, 0);
+                      }}
                     >
                       View Details
                     </Button>

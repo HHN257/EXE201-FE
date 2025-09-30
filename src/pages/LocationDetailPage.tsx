@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Badge, Spinner, Alert } from 'react-bootstrap';
-import { MapPin, Star, ArrowLeft, Clock, Info } from 'lucide-react';
+import { MapPin, Star, ArrowLeft, Info } from 'lucide-react';
 import { apiService } from '../services/api';
 import type { Location } from '../types';
 
@@ -35,6 +35,17 @@ const LocationDetailPage: React.FC = () => {
 
     fetchLocation();
   }, [id]);
+
+  const handleViewOnMap = () => {
+    if (location?.name) {
+      // Encode the location name for URL
+      const encodedName = encodeURIComponent(location.name);
+      // Create Google Maps URL
+      const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedName}`;
+      // Open in new tab
+      window.open(googleMapsUrl, '_blank');
+    }
+  };
 
   if (loading) {
     return (
@@ -158,10 +169,6 @@ const LocationDetailPage: React.FC = () => {
                 <h3 className="h4 fw-bold mb-3">Location Details</h3>
                 <Row>
                   <Col md={6}>
-                    <div className="mb-3">
-                      <strong className="text-muted">Location ID:</strong>
-                      <div>{location.id}</div>
-                    </div>
                     {location.placeType && (
                       <div className="mb-3">
                         <strong className="text-muted">Place Type:</strong>
@@ -181,15 +188,6 @@ const LocationDetailPage: React.FC = () => {
                         </div>
                       </div>
                     )}
-                    {location.createdAt && (
-                      <div className="mb-3">
-                        <strong className="text-muted">Added:</strong>
-                        <div className="d-flex align-items-center">
-                          <Clock size={16} className="me-1" />
-                          {new Date(location.createdAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                    )}
                   </Col>
                 </Row>
               </Card.Body>
@@ -198,18 +196,23 @@ const LocationDetailPage: React.FC = () => {
 
           {/* Sidebar */}
           <Col lg={4}>
-            <Card className="border-0 shadow-sm sticky-top" style={{ top: '2rem' }}>
+            <Card className="border-0 shadow-sm" style={{ top: '2rem' }}>
               <Card.Body className="p-4">
                 <h4 className="fw-bold mb-3">Plan Your Visit</h4>
                 <div className="d-grid gap-2">
-                  <Button variant="primary" size="lg">
+                  <Button 
+                    variant="primary" 
+                    size="lg"
+                    onClick={() => navigate('/tour-guides')}
+                  >
                     Book Tour Guide
                   </Button>
-                  <Button variant="outline-primary">
+                  <Button 
+                    variant="outline-primary"
+                    onClick={handleViewOnMap}
+                    disabled={!location?.name}
+                  >
                     View on Map
-                  </Button>
-                  <Button variant="outline-secondary">
-                    Share Location
                   </Button>
                 </div>
                 
