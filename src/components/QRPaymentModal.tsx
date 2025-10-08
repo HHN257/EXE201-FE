@@ -27,10 +27,10 @@ const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
     () => {
       setCheckingPayment(false);
       setPaymentSuccess(true);
-      // Auto-close after 3 seconds and redirect to dashboard
+      // Auto-close after 3 seconds and redirect to home page
       setTimeout(() => {
         onHide();
-        window.location.href = '/dashboard';
+        window.location.href = '/';
       }, 3000);
     },
     (error: string) => {

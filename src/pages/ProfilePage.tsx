@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner, Image } from 'react-bootstrap';
 import { User, Phone, Globe, Flag, Mail, Edit3, Save, X, Camera, Upload } from 'lucide-react';
-import { apiService } from '../services/api';
+import { apiService, subscriptionAPI } from '../services/api';
 import type { UpdateProfileRequest } from '../services/api';
-import type { User as UserType } from '../types';
+import type { User as UserType, Subscription } from '../types';
 
 const ProfilePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -12,6 +12,8 @@ const ProfilePage: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [profile, setProfile] = useState<UserType | null>(null);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [loadingSubscription, setLoadingSubscription] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     phoneNumber: '',
@@ -22,9 +24,10 @@ const ProfilePage: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load user profile on component mount
+  // Load user profile and subscription on component mount
   useEffect(() => {
     loadProfile();
+    loadSubscription();
   }, []);
 
   const loadProfile = async () => {
@@ -44,6 +47,19 @@ const ProfilePage: React.FC = () => {
       console.error('Error loading profile:', err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadSubscription = async () => {
+    try {
+      setLoadingSubscription(true);
+      const subscriptionData = await subscriptionAPI.getMySubscription();
+      setSubscription(subscriptionData);
+    } catch {
+      console.log('No active subscription found');
+      setSubscription(null);
+    } finally {
+      setLoadingSubscription(false);
     }
   };
 
@@ -230,6 +246,56 @@ const ProfilePage: React.FC = () => {
                         Click to upload a new profile image (JPG, PNG, GIF - Max 5MB)
                       </small>
                     </div>
+                  )}
+                </div>
+
+                {/* Subscription Panel */}
+                <div className="mb-4 pb-4 border-bottom">
+                  <h6 className="text-muted mb-3">Current Subscription</h6>
+                  {loadingSubscription ? (
+                    <div className="d-flex align-items-center text-muted">
+                      <Spinner animation="border" size="sm" className="me-2" />
+                      Loading subscription...
+                    </div>
+                  ) : subscription ? (
+                    <Card className="border-success bg-light">
+                      <Card.Body className="py-3">
+                        <Row className="align-items-center">
+                          <Col md={6}>
+                            <div className="d-flex align-items-center">
+                              <div className="bg-success rounded-circle p-2 me-3">
+                                <User size={16} className="text-white" />
+                              </div>
+                              <div>
+                                <h6 className="mb-0 text-success">{subscription.planName || subscription.plan?.name || 'Active Plan'}</h6>
+                                <small className="text-muted">Active Subscription</small>
+                              </div>
+                            </div>
+                          </Col>
+                          <Col md={6} className="text-md-end">
+                            <div>
+                              <small className="text-muted d-block">Valid until</small>
+                              <span className="fw-bold">
+                                {subscription.currentPeriodEndDate 
+                                  ? new Date(subscription.currentPeriodEndDate).toLocaleDateString()
+                                  : 'N/A'
+                                }
+                              </span>
+                            </div>
+                          </Col>
+                        </Row>
+                      </Card.Body>
+                    </Card>
+                  ) : (
+                    <Card className="border-warning bg-light">
+                      <Card.Body className="py-3 text-center">
+                        <div className="text-muted">
+                          <Globe size={24} className="mb-2 d-block mx-auto opacity-50" />
+                          <p className="mb-2">No active subscription</p>
+                          <small>Subscribe to a plan to access premium features</small>
+                        </div>
+                      </Card.Body>
+                    </Card>
                   )}
                 </div>
 

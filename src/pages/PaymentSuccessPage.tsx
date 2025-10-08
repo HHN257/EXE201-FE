@@ -90,16 +90,21 @@ const PaymentSuccessPage: React.FC = () => {
                         <Row>
                           <Col sm={6} className="mb-3">
                             <strong>Plan:</strong>
-                            <div>{subscription.plan.name}</div>
+                            <div>{subscription.planName || subscription.plan?.name || 'Active Plan'}</div>
                           </Col>
                           <Col sm={6} className="mb-3">
                             <strong>Price:</strong>
-                            <div>{formatPrice(subscription.plan.price)}</div>
+                            <div>{subscription.plan?.price ? formatPrice(subscription.plan.price) : 'N/A'}</div>
                           </Col>
                           <Col sm={6} className="mb-3">
                             <strong>Status:</strong>
                             <div>
-                              <span className="badge bg-success">{subscription.status}</span>
+                              <span className="badge bg-success">
+                                {typeof subscription.status === 'number' 
+                                  ? (subscription.status === 1 ? 'Active' : 'Unknown')
+                                  : subscription.status
+                                }
+                              </span>
                             </div>
                           </Col>
                           <Col sm={6} className="mb-3">
