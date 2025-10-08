@@ -1,27 +1,43 @@
 import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
+import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
 import PublicRoute from './components/PublicRoute';
 import ProtectedRoute from './components/ProtectedRoute';
 import RoleBasedRoute from './components/RoleBasedRoute';
 import LoadingSpinner from './components/LoadingSpinner';
+import DeepLinkTester from './components/DeepLinkTester';
+import SimpleChatbotButton from './components/SimpleChatbotButton';
 import { useAuth } from './contexts/AuthContext';
 import HomePage from './pages/HomePage';
-import ServicesPage from './pages/ServicesPage';
-import DestinationsPage from './pages/DestinationsPage';
+import EnhancedServicesPage from './pages/EnhancedServicesPage';
+import DestinationsPage from './pages/NewDestinationsPage';
+import LocationDetailPage from './pages/LocationDetailPage';
 import TourGuidesPage from './pages/TourGuidesPage';
 import TourGuideDetailPage from './pages/TourGuideDetailPage';
 import BookingsPage from './pages/BookingsPage';
 import CurrencyPage from './pages/CurrencyPage';
 import AboutPage from './pages/AboutPage';
+import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import UnauthorizedPage from './pages/UnauthorizedPage';
 import UserDashboard from './pages/UserDashboard';
 import TourGuideDashboard from './pages/TourGuideDashboard';
+import TourGuideProfilePage from './pages/TourGuideProfilePage';
 import StaffDashboard from './pages/StaffDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminUserManagement from './pages/AdminUserManagement';
+import AdminTourGuideManagement from './pages/AdminTourGuideManagement';
+import AdminBookingsManagement from './pages/AdminBookingsManagement';
+import AdminAnalytics from './pages/AdminAnalytics';
 import TourGuideVerificationPage from './pages/TourGuideVerificationPage';
 import StaffVerificationPage from './pages/StaffVerificationPage';
 import UserTourGuideApplicationPage from './pages/UserTourGuideApplicationPage';
+import LocationManagement from './pages/LocationManagement';
+import PlansPage from './pages/PlansPage';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import GuideBookingsPage from './pages/GuideBookingsPage';
 import './App.css';
 
 function App() {
@@ -30,20 +46,26 @@ function App() {
   // Show loading spinner while checking authentication state
   if (isLoading) {
     return <LoadingSpinner />;
-  }
-
-  return (
+  }  return (
     <div className="App">
+      <ScrollToTop />
       <Header />
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/services" element={<EnhancedServicesPage />} />
         <Route path="/destinations" element={<DestinationsPage />} />
+        <Route path="/destinations/:id" element={<LocationDetailPage />} />
         <Route path="/tour-guides" element={<TourGuidesPage />} />
         <Route path="/tour-guides/:id" element={<TourGuideDetailPage />} />
         <Route path="/bookings" element={<BookingsPage />} />
         <Route path="/currency" element={<CurrencyPage />} />
+        <Route path="/plans" element={<PlansPage />} />
+        <Route path="/payment-success" element={<PaymentSuccessPage />} />
+        <Route path="/payment-failed" element={<PaymentSuccessPage />} />
         <Route path="/about" element={<AboutPage />} />
+        
+        {/* Development Testing Route */}
+        <Route path="/test-deeplinks" element={<DeepLinkTester />} />
         
         {/* Authentication Routes */}
         <Route 
@@ -62,6 +84,9 @@ function App() {
             </PublicRoute>
           } 
         />
+        
+        {/* Unauthorized Access Route */}
+        <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
         {/* Role-based Dashboard Routes */}
         <Route 
@@ -85,11 +110,41 @@ function App() {
           } 
         />
         <Route 
+          path="/guide/profile" 
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['TourGuide']}>
+                <TourGuideProfilePage />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/guide-bookings" 
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['TourGuide']}>
+                <GuideBookingsPage />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
           path="/staff/dashboard" 
           element={
             <ProtectedRoute>
               <RoleBasedRoute allowedRoles={['Staff']}>
                 <StaffDashboard />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/staff/locations" 
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['Staff', 'Admin']}>
+                <LocationManagement />
               </RoleBasedRoute>
             </ProtectedRoute>
           } 
@@ -101,6 +156,58 @@ function App() {
               <RoleBasedRoute allowedRoles={['Admin']}>
                 <AdminDashboard />
               </RoleBasedRoute>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Admin Management Routes */}
+        <Route 
+          path="/admin/users" 
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['Admin']}>
+                <AdminUserManagement />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/tour-guides" 
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['Admin', 'Staff']}>
+                <AdminTourGuideManagement />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/bookings" 
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['Admin', 'Staff']}>
+                <AdminBookingsManagement />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/analytics" 
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['Admin']}>
+                <AdminAnalytics />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* User Profile Route - Available to all authenticated users */}
+        <Route 
+          path="/profile" 
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           } 
         />
@@ -137,6 +244,12 @@ function App() {
           } 
         />
       </Routes>
+      
+      {/* Chatbot floating button - available on all pages */}
+      <SimpleChatbotButton />
+      
+      {/* Footer - available on all pages */}
+      <Footer />
     </div>
   );
 }

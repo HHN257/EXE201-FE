@@ -1,6 +1,9 @@
 import axios from 'axios';
 import type { 
   Location, 
+  CreateLocationDto,
+  UpdateLocationDto,
+  LocationSearchDto,
   Service, 
   TourGuide, 
   Category, 
@@ -8,7 +11,16 @@ import type {
   TourGuideVerificationRequest,
   CreateVerificationRequest,
   AdminReviewRequest,
-  VerificationStatus
+  VerificationStatus,
+  ChatMessage,
+  ChatResponse,
+  ChatConversation,
+  Plan,
+  CreatePlanDto,
+  UpdatePlanDto,
+  Subscription,
+  CreateSubscriptionRequestDto,
+  PaymentResult
 } from '../types';
 import { config } from '../config';
 
@@ -55,6 +67,14 @@ export interface RegisterRequest {
   phoneNumber: string;
   nationality: string;
   preferredLanguage: string;
+}
+
+export interface UpdateProfileRequest {
+  name?: string;
+  phoneNumber?: string;
+  nationality?: string;
+  preferredLanguage?: string;
+  profileImage?: File;
 }
 
 export interface AuthResponse {
@@ -116,7 +136,21 @@ export interface CreateTourGuideDto {
   specializations?: string;
   hourlyRate?: number;
   currency?: string;
-  profileImage?: string;
+  profileImage?: File;
+  isVerified?: boolean;
+  isActive?: boolean;
+}
+
+export interface UpdateTourGuideDto {
+  name?: string;
+  bio?: string;
+  phoneNumber?: string;
+  email?: string;
+  languages?: string;
+  specializations?: string;
+  hourlyRate?: number;
+  currency?: string;
+  profileImage?: File;
   isVerified?: boolean;
   isActive?: boolean;
 }
@@ -144,6 +178,14 @@ export interface CreateTourGuideBookingDto {
   endDate: string;
   notes?: string;
   location?: string;
+}
+
+export interface UpdateTourGuideBookingDto {
+  startDate?: string;
+  endDate?: string;
+  notes?: string;
+  location?: string;
+  status?: string;
 }
 
 export interface TourGuideReviewDto {
@@ -191,15 +233,71 @@ export const apiService = {
   getCurrentUser: (): Promise<User> =>
     api.get('/users/profile').then(res => res.data),
 
+  updateProfile: async (profileData: UpdateProfileRequest): Promise<User> => {
+    const formData = new FormData();
+    
+    if (profileData.name) formData.append('name', profileData.name);
+    if (profileData.phoneNumber) formData.append('phoneNumber', profileData.phoneNumber);
+    if (profileData.nationality) formData.append('nationality', profileData.nationality);
+    if (profileData.preferredLanguage) formData.append('preferredLanguage', profileData.preferredLanguage);
+    if (profileData.profileImage) formData.append('profileImage', profileData.profileImage);
+    
+    const response = await api.put('/users/profile', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
   // Locations
-  getPopularLocations: (): Promise<Location[]> =>
-    api.get('/locations/popular').then(res => res.data),
+  getAllLocations: (page = 1, pageSize = 20): Promise<Location[]> =>
+    api.get('/locations', { params: { page, pageSize } }).then(res => res.data),
   
-  getLocationById: (id: string): Promise<Location> =>
+  getLocationById: (id: number): Promise<Location> =>
     api.get(`/locations/${id}`).then(res => res.data),
 
-  searchLocations: (query: string): Promise<Location[]> =>
-    api.get('/locations/search', { params: { query } }).then(res => res.data),
+  searchLocations: (searchParams: LocationSearchDto): Promise<Location[]> =>
+    api.get('/locations/search', { params: searchParams }).then(res => res.data),
+
+  createLocation: async (locationData: CreateLocationDto): Promise<Location> => {
+    const formData = new FormData();
+    
+    formData.append('name', locationData.name);
+    if (locationData.address) formData.append('address', locationData.address);
+    if (locationData.placeType) formData.append('placeType', locationData.placeType);
+    if (locationData.rating) formData.append('rating', locationData.rating.toString());
+    if (locationData.userReview) formData.append('userReview', locationData.userReview);
+    if (locationData.imageUrl) formData.append('imageUrl', locationData.imageUrl);
+    
+    const response = await api.post('/locations', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  updateLocation: async (id: number, locationData: UpdateLocationDto): Promise<Location> => {
+    const formData = new FormData();
+    
+    if (locationData.name) formData.append('name', locationData.name);
+    if (locationData.address) formData.append('address', locationData.address);
+    if (locationData.placeType) formData.append('placeType', locationData.placeType);
+    if (locationData.rating) formData.append('rating', locationData.rating.toString());
+    if (locationData.userReview) formData.append('userReview', locationData.userReview);
+    if (locationData.imageUrl) formData.append('imageUrl', locationData.imageUrl);
+    
+    const response = await api.put(`/locations/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  deleteLocation: (id: number): Promise<void> =>
+    api.delete(`/locations/${id}`).then(res => res.data),
 
   // Services
   getFeaturedServices: (): Promise<Service[]> =>
@@ -221,6 +319,35 @@ export const apiService = {
 
   getTourGuideById: (id: string): Promise<TourGuide> =>
     api.get(`/tourguides/${id}`).then(res => res.data),
+
+  getTourGuideByUserId: (userId: number): Promise<TourGuideDto> =>
+    api.get(`/tourguides/${userId}`).then(res => res.data),
+
+  getCurrentTourGuide: (): Promise<TourGuideDto> =>
+    api.get('/tourguides/current').then(res => res.data),
+
+  updateTourGuide: async (id: number, tourGuideData: UpdateTourGuideDto): Promise<TourGuideDto> => {
+    const formData = new FormData();
+    
+    if (tourGuideData.name) formData.append('name', tourGuideData.name);
+    if (tourGuideData.bio) formData.append('bio', tourGuideData.bio);
+    if (tourGuideData.phoneNumber) formData.append('phoneNumber', tourGuideData.phoneNumber);
+    if (tourGuideData.email) formData.append('email', tourGuideData.email);
+    if (tourGuideData.languages) formData.append('languages', tourGuideData.languages);
+    if (tourGuideData.specializations) formData.append('specializations', tourGuideData.specializations);
+    if (tourGuideData.hourlyRate) formData.append('hourlyRate', tourGuideData.hourlyRate.toString());
+    if (tourGuideData.currency) formData.append('currency', tourGuideData.currency);
+    if (tourGuideData.profileImage) formData.append('profileImage', tourGuideData.profileImage);
+    if (tourGuideData.isVerified !== undefined) formData.append('isVerified', tourGuideData.isVerified.toString());
+    if (tourGuideData.isActive !== undefined) formData.append('isActive', tourGuideData.isActive.toString());
+    
+    const response = await api.put(`/tourguides/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
 
   searchTourGuides: (query: string, location?: string): Promise<TourGuide[]> =>
     api.get('/tourguides/search', { params: { query, location } }).then(res => res.data),
@@ -267,8 +394,28 @@ export const tourGuideService = {
     api.get(`/tourguides/${id}`).then(res => res.data),
 
   // Create tour guide
-  create: (data: CreateTourGuideDto): Promise<TourGuideDto> =>
-    api.post('/tourguides', data).then(res => res.data),
+  create: async (data: CreateTourGuideDto): Promise<TourGuideDto> => {
+    const formData = new FormData();
+    
+    formData.append('name', data.name);
+    if (data.bio) formData.append('bio', data.bio);
+    if (data.phoneNumber) formData.append('phoneNumber', data.phoneNumber);
+    if (data.email) formData.append('email', data.email);
+    if (data.languages) formData.append('languages', data.languages);
+    if (data.specializations) formData.append('specializations', data.specializations);
+    if (data.hourlyRate) formData.append('hourlyRate', data.hourlyRate.toString());
+    if (data.currency) formData.append('currency', data.currency);
+    if (data.profileImage) formData.append('profileImage', data.profileImage);
+    if (data.isVerified !== undefined) formData.append('isVerified', data.isVerified.toString());
+    if (data.isActive !== undefined) formData.append('isActive', data.isActive.toString());
+    
+    const response = await api.post('/tourguides', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
 
   // Get tour guide reviews
   getReviews: (id: number): Promise<TourGuideReviewDto[]> =>
@@ -292,6 +439,23 @@ export const tourGuideBookingService = {
   // Get bookings for a tour guide
   getByTourGuide: (tourGuideId: number): Promise<TourGuideBookingDto[]> =>
     api.get(`/tourguidebookings/tourguide/${tourGuideId}`).then(res => res.data),
+
+  // Cancel a booking
+  cancel: async (id: number): Promise<void> => {
+    await api.delete(`/tourguidebookings/${id}`);
+  },
+
+  // Update booking
+  update: async (id: number, data: UpdateTourGuideBookingDto): Promise<TourGuideBookingDto> => {
+    const response = await api.put(`/tourguidebookings/${id}`, data);
+    return response.data;
+  },
+  
+  // Update booking status (convenience method)
+  updateStatus: async (id: number, status: string): Promise<TourGuideBookingDto> => {
+    const response = await api.put(`/tourguidebookings/${id}`, { status });
+    return response.data;
+  },
 };
 
 // Tour Guide Review service
@@ -324,12 +488,64 @@ export const verificationService = {
     api.get('/tourguideverification/my-requests').then(res => res.data),
 
   // Submit verification request (for tour guides)
-  submit: (data: CreateVerificationRequest): Promise<TourGuideVerificationRequest> =>
-    api.post('/tourguideverification', data).then(res => res.data),
+  submit: async (data: CreateVerificationRequest): Promise<TourGuideVerificationRequest> => {
+    const formData = new FormData();
+    
+    formData.append('fullName', data.fullName);
+    formData.append('identityNumber', data.identityNumber);
+    formData.append('phoneNumber', data.phoneNumber);
+    formData.append('email', data.email);
+    if (data.address) formData.append('address', data.address);
+    if (data.identityCardFrontUrl) formData.append('identityCardFrontUrl', data.identityCardFrontUrl);
+    if (data.identityCardBackUrl) formData.append('identityCardBackUrl', data.identityCardBackUrl);
+    if (data.tourGuideLicenseUrl) formData.append('tourGuideLicenseUrl', data.tourGuideLicenseUrl);
+    if (data.licenseNumber) formData.append('licenseNumber', data.licenseNumber);
+    if (data.issuingAuthority) formData.append('issuingAuthority', data.issuingAuthority);
+    if (data.licenseIssueDate) formData.append('licenseIssueDate', data.licenseIssueDate);
+    if (data.licenseExpiryDate) formData.append('licenseExpiryDate', data.licenseExpiryDate);
+    if (data.additionalDocumentsUrls) formData.append('additionalDocumentsUrls', data.additionalDocumentsUrls);
+    if (data.experience) formData.append('experience', data.experience);
+    if (data.languages) formData.append('languages', data.languages);
+    if (data.specializations) formData.append('specializations', data.specializations);
+    if (data.additionalNotes) formData.append('additionalNotes', data.additionalNotes);
+    
+    const response = await api.post('/tourguideverification', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
 
   // Update verification request (for tour guides)
-  update: (id: number, data: Partial<CreateVerificationRequest>): Promise<TourGuideVerificationRequest> =>
-    api.put(`/tourguideverification/${id}`, data).then(res => res.data),
+  update: async (id: number, data: Partial<CreateVerificationRequest>): Promise<TourGuideVerificationRequest> => {
+    const formData = new FormData();
+    
+    if (data.fullName) formData.append('fullName', data.fullName);
+    if (data.identityNumber) formData.append('identityNumber', data.identityNumber);
+    if (data.phoneNumber) formData.append('phoneNumber', data.phoneNumber);
+    if (data.email) formData.append('email', data.email);
+    if (data.address) formData.append('address', data.address);
+    if (data.identityCardFrontUrl) formData.append('identityCardFrontUrl', data.identityCardFrontUrl);
+    if (data.identityCardBackUrl) formData.append('identityCardBackUrl', data.identityCardBackUrl);
+    if (data.tourGuideLicenseUrl) formData.append('tourGuideLicenseUrl', data.tourGuideLicenseUrl);
+    if (data.licenseNumber) formData.append('licenseNumber', data.licenseNumber);
+    if (data.issuingAuthority) formData.append('issuingAuthority', data.issuingAuthority);
+    if (data.licenseIssueDate) formData.append('licenseIssueDate', data.licenseIssueDate);
+    if (data.licenseExpiryDate) formData.append('licenseExpiryDate', data.licenseExpiryDate);
+    if (data.additionalDocumentsUrls) formData.append('additionalDocumentsUrls', data.additionalDocumentsUrls);
+    if (data.experience) formData.append('experience', data.experience);
+    if (data.languages) formData.append('languages', data.languages);
+    if (data.specializations) formData.append('specializations', data.specializations);
+    if (data.additionalNotes) formData.append('additionalNotes', data.additionalNotes);
+    
+    const response = await api.put(`/tourguideverification/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
 
   // Delete verification request (for tour guides)
   delete: (id: number): Promise<void> =>
@@ -351,4 +567,86 @@ export const verificationService = {
   // Verify tour guide directly (for admin/staff)
   verifyDirectly: (tourGuideId: number, isVerified: boolean): Promise<TourGuide> =>
     api.put(`/tourguideverification/staff/${tourGuideId}/verify`, { isVerified }).then(res => res.data),
+};
+
+// Weather API
+export interface WeatherData {
+  current: {
+    temperature_2m: number;
+    relative_humidity_2m: number;
+    wind_speed_10m: number;
+    time: string;
+  };
+  current_units: {
+    temperature_2m: string;
+    relative_humidity_2m: string;
+    wind_speed_10m: string;
+  };
+}
+
+export const weatherApi = {
+  // Get current weather for coordinates
+  getWeather: (latitude: number, longitude: number): Promise<WeatherData> =>
+    api.get('/weather', { params: { latitude, longitude } }).then(res => res.data),
+};
+
+// Chatbot API
+export const chatbotApi = {
+  // Send a simple message without conversation history
+  sendMessage: (data: ChatMessage): Promise<ChatResponse> =>
+    api.post('/chatbot/message', data).then(res => res.data),
+
+  // Send a message with conversation history
+  sendMessageWithHistory: (data: ChatMessage): Promise<ChatResponse> =>
+    api.post('/chatbot/conversation', data).then(res => res.data),
+
+  // Get conversation history
+  getHistory: (): Promise<ChatConversation> =>
+    api.get('/chatbot/history').then(res => res.data),
+
+  // Clear conversation history
+  clearHistory: (): Promise<{ message: string }> =>
+    api.delete('/chatbot/history').then(res => res.data),
+
+  // Get suggested questions
+  getSuggestedQuestions: (language: string = 'en'): Promise<string[]> =>
+    api.get('/chatbot/suggested-questions', { params: { language } }).then(res => res.data),
+
+  // Health check
+  healthCheck: (): Promise<{ status: string }> =>
+    api.get('/chatbot/health').then(res => res.data),
+};
+
+// Plan API
+export const planAPI = {
+  // Get all active plans
+  getAllPlans: (): Promise<Plan[]> => 
+    api.get('/plans').then(res => res.data),
+
+  // Get plan by ID
+  getPlanById: (id: number): Promise<Plan> =>
+    api.get(`/plans/${id}`).then(res => res.data),
+
+  // Admin only - Create plan
+  createPlan: (data: CreatePlanDto): Promise<Plan> =>
+    api.post('/plans', data).then(res => res.data),
+
+  // Admin only - Update plan
+  updatePlan: (id: number, data: UpdatePlanDto): Promise<Plan> =>
+    api.put(`/plans/${id}`, data).then(res => res.data),
+
+  // Admin only - Delete plan
+  deletePlan: (id: number): Promise<void> =>
+    api.delete(`/plans/${id}`).then(res => res.data),
+};
+
+// Subscription API
+export const subscriptionAPI = {
+  // Create subscription and get payment link
+  createSubscription: (data: CreateSubscriptionRequestDto): Promise<PaymentResult> =>
+    api.post('/subscriptions', data).then(res => res.data),
+
+  // Get user's current subscription
+  getMySubscription: (): Promise<Subscription> =>
+    api.get('/subscriptions/me').then(res => res.data),
 };

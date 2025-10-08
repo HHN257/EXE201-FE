@@ -4,12 +4,15 @@ import { Calendar, Clock, MapPin, User, DollarSign } from 'lucide-react';
 import { tourGuideBookingService } from '../services/api';
 import type { TourGuideBookingDto } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import BookingDetailsModal from '../components/BookingDetailsModal';
 
 const BookingsPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [bookings, setBookings] = useState<TourGuideBookingDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<TourGuideBookingDto | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -26,6 +29,35 @@ const BookingsPage: React.FC = () => {
       setError('Failed to load bookings. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleViewDetails = (booking: TourGuideBookingDto) => {
+    setSelectedBooking(booking);
+    setShowDetailsModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowDetailsModal(false);
+    setSelectedBooking(null);
+  };
+
+  const handleBookingCancelled = (bookingId: number) => {
+    // Remove the cancelled booking from the list
+    setBookings(prevBookings => 
+      prevBookings.filter(booking => booking.id !== bookingId)
+    );
+  };
+
+  const handleQuickCancel = async (bookingId: number) => {
+    if (window.confirm('Are you sure you want to cancel this booking?')) {
+      try {
+        await tourGuideBookingService.cancel(bookingId);
+        handleBookingCancelled(bookingId);
+      } catch (error) {
+        setError('Failed to cancel booking. Please try again.');
+        console.error('Error cancelling booking:', error);
+      }
     }
   };
 
@@ -159,9 +191,24 @@ const BookingsPage: React.FC = () => {
                         </td>
                         <td>{getStatusBadge(booking.status)}</td>
                         <td>
-                          <Button variant="outline-primary" size="sm">
-                            View Details
-                          </Button>
+                          <div className="d-flex gap-1">
+                            <Button 
+                              variant="outline-primary" 
+                              size="sm"
+                              onClick={() => handleViewDetails(booking)}
+                            >
+                              View Details
+                            </Button>
+                            {booking.status.toLowerCase() === 'pending' && (
+                              <Button 
+                                variant="outline-danger" 
+                                size="sm"
+                                onClick={() => handleQuickCancel(booking.id)}
+                              >
+                                Cancel
+                              </Button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -212,11 +259,20 @@ const BookingsPage: React.FC = () => {
                       )}
 
                       <div className="d-flex gap-2">
-                        <Button variant="outline-primary" size="sm" className="flex-grow-1">
+                        <Button 
+                          variant="outline-primary" 
+                          size="sm" 
+                          className="flex-grow-1"
+                          onClick={() => handleViewDetails(booking)}
+                        >
                           View Details
                         </Button>
                         {booking.status.toLowerCase() === 'pending' && (
-                          <Button variant="outline-danger" size="sm">
+                          <Button 
+                            variant="outline-danger" 
+                            size="sm"
+                            onClick={() => handleQuickCancel(booking.id)}
+                          >
                             Cancel
                           </Button>
                         )}
@@ -276,6 +332,14 @@ const BookingsPage: React.FC = () => {
           </Col>
         </Row>
       )}
+
+      {/* Booking Details Modal */}
+      <BookingDetailsModal
+        show={showDetailsModal}
+        onHide={handleCloseModal}
+        booking={selectedBooking}
+        onBookingCancelled={handleBookingCancelled}
+      />
     </Container>
   );
 };

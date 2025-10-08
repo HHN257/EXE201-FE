@@ -12,7 +12,16 @@ interface TourGuideCardProps {
 const TourGuideCard: React.FC<TourGuideCardProps> = ({ tourGuide, onBook }) => {
   const formatRate = (rate?: number, currency?: string) => {
     if (!rate) return 'Contact for pricing';
-    return `${currency || '$'}${rate}/hour`;
+    
+    const currencyCode = currency || 'VND';
+    
+    if (currencyCode === 'VND') {
+      return `${rate.toLocaleString('vi-VN')} VND/hour`;
+    } else if (currencyCode === 'USD') {
+      return `$${rate}/hour`;
+    } else {
+      return `${rate.toLocaleString()} ${currencyCode}/hour`;
+    }
   };
 
   const getSpecializationBadges = () => {

@@ -2,6 +2,8 @@ import React from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import { Users, Heart, Globe, Award } from 'lucide-react';
 
+import vnImage from '../assets/vn land.jpg';
+
 const AboutPage: React.FC = () => {
   const features = [
     {
@@ -35,19 +37,31 @@ const AboutPage: React.FC = () => {
 
   const team = [
     {
-      name: 'Nguyen Van An',
+      name: 'Hà Phương Uyên',
       role: 'Founder & CEO',
       image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
       description: 'Travel enthusiast with 15 years of experience in Vietnam tourism industry.'
     },
     {
-      name: 'Tran Thi Linh',
+      name: 'Hồ Ngọc Anh Thư',
       role: 'Head of Operations',
       image: 'https://images.unsplash.com/photo-1494790108755-2616b612b547?w=200',
       description: 'Expert in local partnerships and community development across Vietnam.'
     },
     {
-      name: 'Le Minh Duc',
+      name: 'Phan Nguyễn Khánh Trang',
+      role: 'Technology Director',
+      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200',
+      description: 'Tech innovator focused on creating seamless travel experiences through technology.'
+    },
+    {
+      name: 'Hoàng Hữu Nam',
+      role: 'Technology Director',
+      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200',
+      description: 'Tech innovator focused on creating seamless travel experiences through technology.'
+    },
+    {
+      name: 'Nguyễn Minh Thông',
       role: 'Technology Director',
       image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200',
       description: 'Tech innovator focused on creating seamless travel experiences through technology.'
@@ -88,7 +102,7 @@ const AboutPage: React.FC = () => {
             </Col>
             <Col lg={6}>
               <img
-                src="https://images.unsplash.com/photo-1539650116574-75c0c6d73d0e?w=600"
+                src={vnImage}
                 alt="Vietnam landscape"
                 className="img-fluid rounded shadow"
               />

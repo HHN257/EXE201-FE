@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Globe, User, LogOut, Settings, Shield, Crown, UserCheck } from 'lucide-react';
-import { Navbar, Nav, Container, Button, Dropdown, Badge } from 'react-bootstrap';
+import { User, LogOut, Settings, Shield, Crown, UserCheck, Calendar } from 'lucide-react';
+import { Navbar, Nav, Container, Button, Dropdown, Image } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
-import { getUserDisplayName } from '../utils/roleUtils';
+import Logo from '../assets/Logo.png';
 
 const Header: React.FC = () => {
-  const [language, setLanguage] = useState('EN');
   const { isAuthenticated, user, logout, getRoleBasedDashboard } = useAuth();
   const navigate = useNavigate();
 
@@ -28,64 +27,48 @@ const Header: React.FC = () => {
     }
   };
 
-  const getRoleBadgeColor = (role: string) => {
-    switch (role?.toLowerCase()) {
-      case 'admin':
-        return 'danger';
-      case 'staff':
-        return 'warning';
-      case 'tourguide':
-        return 'success';
-      default:
-        return 'secondary';
-    }
-  };
 
   return (
-    <Navbar bg="white" expand="lg" className="shadow-sm border-bottom sticky-top">
+    <Navbar expand="lg" className="shadow-sm border-bottom sticky-top" style={{ backgroundColor: '#29499c' }}>
       <Container fluid className="px-3 px-lg-5">
         {/* Logo */}
-        <Navbar.Brand as={Link} to="/" className="fw-bold fs-3" style={{ color: '#2563eb' }}>
-          SmartTravel
+        <Navbar.Brand as={Link} to="/" className="d-flex align-items-center fw-bold fs-3" style={{ color: 'white' }}>
+          <img 
+            src={Logo} 
+            alt="VietGo Logo" 
+            style={{ height: '40px', width: 'auto', marginRight: '12px' }}
+          />
+          VietGo
         </Navbar.Brand>
 
         {/* Desktop Navigation */}
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
-            <Nav.Link as={Link} to="/destinations" className="text-dark">Destinations</Nav.Link>
-            <Nav.Link as={Link} to="/services" className="text-dark">Services</Nav.Link>
-            <Nav.Link as={Link} to="/tour-guides" className="text-dark">Tour Guides</Nav.Link>
-            <Nav.Link as={Link} to="/currency" className="text-dark">Currency</Nav.Link>
-            <Nav.Link as={Link} to="/about" className="text-dark">About</Nav.Link>
+            <Nav.Link as={Link} to="/destinations" className="text-white">Destinations</Nav.Link>
+            <Nav.Link as={Link} to="/services" className="text-white">Services</Nav.Link>
+            <Nav.Link as={Link} to="/tour-guides" className="text-white">Tour Guides</Nav.Link>
+            <Nav.Link as={Link} to="/plans" className="text-white">Plans</Nav.Link>
+            <Nav.Link as={Link} to="/currency" className="text-white">Currency</Nav.Link>
+            <Nav.Link as={Link} to="/about" className="text-white">About</Nav.Link>
           </Nav>
 
           {/* Right side actions */}
           <div className="d-flex align-items-center gap-3">
-            {/* Language Selector */}
-            <div className="d-flex align-items-center gap-1">
-              <Globe size={16} className="text-secondary" />
-              <select 
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="form-select form-select-sm border-0"
-                style={{ width: 'auto' }}
-              >
-                <option value="EN">EN</option>
-                <option value="VI">VI</option>
-              </select>
-            </div>
-
             {/* Auth section */}
             {isAuthenticated ? (
               <Dropdown align="end">
-                <Dropdown.Toggle variant="link" className="text-dark text-decoration-none border-0 bg-transparent">
+                <Dropdown.Toggle variant="link" className="text-white text-decoration-none border-0 bg-transparent">
                   <div className="d-flex align-items-center gap-2">
                     {getRoleIcon(user?.role || 'user')}
                     <span>{user?.name || 'User'}</span>
-                    <Badge bg={getRoleBadgeColor(user?.role || 'user')} className="ms-1">
-                      {getUserDisplayName(user?.role || 'user')}
-                    </Badge>
+                    <div className="rounded-circle overflow-hidden border" style={{ width: '40px', height: '40px' }}>
+                      <Image
+                        src={user?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&size=40&background=0d6efd&color=fff`}
+                        alt="Profile"
+                        className="w-100 h-100 object-fit-cover"
+                      />
+                    </div>
                   </div>
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
@@ -93,9 +76,32 @@ const Header: React.FC = () => {
                     <Settings size={16} className="me-2" />
                     Dashboard
                   </Dropdown.Item>
-                  <Dropdown.Item>Profile</Dropdown.Item>
-                  {(user?.role?.toLowerCase() === 'user' || user?.role?.toLowerCase() === 'tourguide') && (
-                    <Dropdown.Item as={Link} to="/bookings">My Bookings</Dropdown.Item>
+                  {user?.role?.toLowerCase() === 'tourguide' ? (
+                    <>
+                      <Dropdown.Item as={Link} to="/profile">
+                        <User size={16} className="me-2" />
+                        Personal Profile
+                      </Dropdown.Item>
+                      <Dropdown.Item as={Link} to="/guide/profile">
+                        <UserCheck size={16} className="me-2" />
+                        Tour Guide Profile
+                      </Dropdown.Item>
+                      <Dropdown.Item as={Link} to="/guide-bookings">
+                        <Calendar size={16} className="me-2" />
+                        My Tour Bookings
+                      </Dropdown.Item>
+                    </>
+                  ) : (
+                    <>
+                      <Dropdown.Item as={Link} to="/profile">
+                        <User size={16} className="me-2" />
+                        Profile
+                      </Dropdown.Item>
+                      <Dropdown.Item as={Link} to="/bookings">
+                        <Calendar size={16} className="me-2" />
+                        My Bookings
+                      </Dropdown.Item>
+                    </>
                   )}
                   <Dropdown.Divider />
                   <Dropdown.Item onClick={handleLogout}>
@@ -107,7 +113,7 @@ const Header: React.FC = () => {
             ) : (
               <>
                 <Link to="/login">
-                  <Button variant="link" className="text-dark text-decoration-none">
+                  <Button variant="link" className="text-white text-decoration-none">
                     Sign In
                   </Button>
                 </Link>

@@ -1,0 +1,32 @@
+.hover-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.service-logo {
+  height: 60px;
+  object-fit: contain;
+  max-width: 100%;
+}
+
+.deep-link-button {
+  transition: all 0.2s ease;
+}
+
+.deep-link-button:hover {
+  transform: scale(1.02);
+}
+
+.external-service-card {
+  cursor: pointer;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+}
+
+.external-service-card:hover {
+  border-color: #007bff;
+}

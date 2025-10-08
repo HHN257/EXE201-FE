@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,6 +13,11 @@ const LoginPage = () => {
   
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get the redirect info from navigation state
+  const redirectFrom = location.state?.from;
+  const unauthorizedMessage = location.state?.message;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +26,9 @@ const LoginPage = () => {
 
     try {
       const { redirectTo } = await login(email, password);
-      navigate(redirectTo);
+      // If user was redirected here from a protected route, redirect back there
+      // Otherwise, redirect to the default dashboard
+      navigate(redirectFrom || redirectTo);
     } catch {
       setError('Invalid email or password. Please try again.');
     } finally {
@@ -45,6 +52,13 @@ const LoginPage = () => {
                   </Link>
                   <p className="text-muted">Welcome back! Please sign in to your account.</p>
                 </div>
+
+                {/* Unauthorized Access Alert */}
+                {unauthorizedMessage && (
+                  <Alert variant="warning" className="mb-4">
+                    <strong>Access Restricted:</strong> {unauthorizedMessage}
+                  </Alert>
+                )}
 
                 {/* Error Alert */}
                 {error && (

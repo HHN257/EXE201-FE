@@ -2,7 +2,8 @@ import React from 'react';
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Calendar, MapPin, CreditCard, Settings, Bell } from 'lucide-react';
+import SubscriptionCard from '../components/SubscriptionCard';
+import { User, Calendar } from 'lucide-react';
 
 const UserDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -21,34 +22,6 @@ const UserDashboard: React.FC = () => {
       icon: <Calendar size={24} />,
       link: '/bookings',
       color: 'primary'
-    },
-    {
-      title: 'Tour Guides',
-      description: 'Browse and book tour guides',
-      icon: <User size={24} />,
-      link: '/tour-guides',
-      color: 'success'
-    },
-    {
-      title: 'Destinations',
-      description: 'Explore travel destinations',
-      icon: <MapPin size={24} />,
-      link: '/destinations',
-      color: 'info'
-    },
-    {
-      title: 'Currency Converter',
-      description: 'Convert currencies for travel',
-      icon: <CreditCard size={24} />,
-      link: '/currency',
-      color: 'secondary'
-    },
-    {
-      title: 'Services',
-      description: 'Browse travel services',
-      icon: <Settings size={24} />,
-      link: '/services',
-      color: 'dark'
     }
   ];
 
@@ -90,41 +63,8 @@ const UserDashboard: React.FC = () => {
       </Row>
 
       <Row className="mt-5">
-        <Col lg={8}>
-          <Card className="border-0 shadow-sm">
-            <Card.Header className="bg-light">
-              <h5 className="mb-0">
-                <Bell size={20} className="me-2" />
-                Recent Activity
-              </h5>
-            </Card.Header>
-            <Card.Body>
-              <p className="text-muted">No recent activity to show.</p>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col lg={4}>
-          <Card className="border-0 shadow-sm">
-            <Card.Header className="bg-light">
-              <h5 className="mb-0">Quick Stats</h5>
-            </Card.Header>
-            <Card.Body>
-              <div className="d-flex justify-content-between mb-2">
-                <span>Total Bookings:</span>
-                <span className="fw-bold">0</span>
-              </div>
-              <div className="d-flex justify-content-between mb-2">
-                <span>Completed Tours:</span>
-                <span className="fw-bold">0</span>
-              </div>
-              <div className="d-flex justify-content-between">
-                <span>Member Since:</span>
-                <span className="fw-bold">
-                  {user?.createdAt ? new Date(user.createdAt).getFullYear() : 'N/A'}
-                </span>
-              </div>
-            </Card.Body>
-          </Card>
+        <Col>
+          <SubscriptionCard />
         </Col>
       </Row>
     </Container>
