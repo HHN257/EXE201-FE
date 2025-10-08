@@ -42,8 +42,12 @@ const SubscriptionCard: React.FC = () => {
     });
   };
 
-  const getStatusVariant = (status: string) => {
-    switch (status) {
+  const getStatusVariant = (status: string | number) => {
+    const statusString = typeof status === 'number' ? 
+      (status === 1 ? 'Active' : status === 0 ? 'Pending' : status === 2 ? 'Canceled' : 'Expired') : 
+      status;
+      
+    switch (statusString) {
       case 'Active':
         return 'success';
       case 'Pending':
@@ -123,8 +127,8 @@ const SubscriptionCard: React.FC = () => {
 
         <Row className="mb-3">
           <Col>
-            <h6 className="text-primary mb-2">{subscription.plan.name}</h6>
-            {subscription.plan.description && (
+            <h6 className="text-primary mb-2">{subscription.planName || subscription.plan?.name || 'Active Plan'}</h6>
+            {subscription.plan?.description && (
               <p className="text-muted small mb-0">{subscription.plan.description}</p>
             )}
           </Col>
@@ -142,7 +146,7 @@ const SubscriptionCard: React.FC = () => {
           <Col sm={6}>
             <strong>Price:</strong>
             <div className="text-success fw-bold">
-              {formatPrice(subscription.plan.price)}
+              {subscription.plan?.price ? formatPrice(subscription.plan.price) : 'N/A'}
             </div>
           </Col>
         </Row>

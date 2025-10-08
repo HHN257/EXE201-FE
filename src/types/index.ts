@@ -199,13 +199,14 @@ export interface UpdatePlanDto {
   isActive?: boolean;
 }
 
-export type SubscriptionStatus = 'Pending' | 'Active' | 'Canceled' | 'Expired';
+export type SubscriptionStatus = 'Pending' | 'Active' | 'Canceled' | 'Expired' | 0 | 1 | 2 | 3;
 
 export interface Subscription {
   id: string; // Guid maps to string in TypeScript
   userId: number;
   planId: number;
-  plan: Plan;
+  plan?: Plan; // Optional nested plan object
+  planName?: string; // Plan name directly from API
   status: SubscriptionStatus;
   startedDate?: string; // DateTime? maps to optional string
   currentPeriodEndDate?: string; // DateTime? maps to optional string
@@ -214,21 +215,6 @@ export interface Subscription {
 
 export interface CreateSubscriptionRequestDto {
   planId: number;
-}
-
-export interface PaymentDataDto {
-  orderCode: number;
-  amount: number;
-  description: string;
-  items: ItemDto[];
-  cancelUrl: string;
-  returnUrl: string;
-}
-
-export interface ItemDto {
-  name: string;
-  quantity: number;
-  price: number;
 }
 
 export interface PaymentResult {
