@@ -174,6 +174,71 @@ export interface VerificationStatus {
   userRole?: string; // For User applications
 }
 
+// Plan and Subscription Types
+export interface Plan {
+  id: number;
+  name: string;
+  description?: string;
+  price: number;
+  billingCycleInMonths: number; // Billing cycle in months
+  isActive: boolean;
+}
+
+export interface CreatePlanDto {
+  name: string;
+  description?: string;
+  price: number;
+  billingCycleInMonths: number;
+}
+
+export interface UpdatePlanDto {
+  name?: string;
+  description?: string;
+  price?: number;
+  billingCycleInMonths?: number;
+  isActive?: boolean;
+}
+
+export type SubscriptionStatus = 'Pending' | 'Active' | 'Canceled' | 'Expired';
+
+export interface Subscription {
+  id: string; // Guid maps to string in TypeScript
+  userId: number;
+  planId: number;
+  plan: Plan;
+  status: SubscriptionStatus;
+  startedDate?: string; // DateTime? maps to optional string
+  currentPeriodEndDate?: string; // DateTime? maps to optional string
+  canceledDate?: string; // DateTime? maps to optional string
+}
+
+export interface CreateSubscriptionRequestDto {
+  planId: number;
+}
+
+export interface PaymentDataDto {
+  orderCode: number;
+  amount: number;
+  description: string;
+  items: ItemDto[];
+  cancelUrl: string;
+  returnUrl: string;
+}
+
+export interface ItemDto {
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+export interface PaymentResult {
+  checkoutUrl?: string;
+  paymentLinkId?: string;
+  qrCode?: string;
+  orderCode?: number;
+  status?: string;
+}
+
 // Chatbot Types
 export interface ChatMessage {
   message: string;

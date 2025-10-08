@@ -35,6 +35,9 @@ import TourGuideVerificationPage from './pages/TourGuideVerificationPage';
 import StaffVerificationPage from './pages/StaffVerificationPage';
 import UserTourGuideApplicationPage from './pages/UserTourGuideApplicationPage';
 import LocationManagement from './pages/LocationManagement';
+import PlansPage from './pages/PlansPage';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import GuideBookingsPage from './pages/GuideBookingsPage';
 import './App.css';
 
 function App() {
@@ -56,6 +59,9 @@ function App() {
         <Route path="/tour-guides/:id" element={<TourGuideDetailPage />} />
         <Route path="/bookings" element={<BookingsPage />} />
         <Route path="/currency" element={<CurrencyPage />} />
+        <Route path="/plans" element={<PlansPage />} />
+        <Route path="/payment-success" element={<PaymentSuccessPage />} />
+        <Route path="/payment-failed" element={<PaymentSuccessPage />} />
         <Route path="/about" element={<AboutPage />} />
         
         {/* Development Testing Route */}
@@ -109,6 +115,16 @@ function App() {
             <ProtectedRoute>
               <RoleBasedRoute allowedRoles={['TourGuide']}>
                 <TourGuideProfilePage />
+              </RoleBasedRoute>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/guide-bookings" 
+          element={
+            <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['TourGuide']}>
+                <GuideBookingsPage />
               </RoleBasedRoute>
             </ProtectedRoute>
           } 

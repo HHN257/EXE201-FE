@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, LogOut, Settings, Shield, Crown, UserCheck } from 'lucide-react';
+import { User, LogOut, Settings, Shield, Crown, UserCheck, Calendar } from 'lucide-react';
 import { Navbar, Nav, Container, Button, Dropdown, Image } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
 import Logo from '../assets/Logo.png';
@@ -48,6 +48,7 @@ const Header: React.FC = () => {
             <Nav.Link as={Link} to="/destinations" className="text-white">Destinations</Nav.Link>
             <Nav.Link as={Link} to="/services" className="text-white">Services</Nav.Link>
             <Nav.Link as={Link} to="/tour-guides" className="text-white">Tour Guides</Nav.Link>
+            <Nav.Link as={Link} to="/plans" className="text-white">Plans</Nav.Link>
             <Nav.Link as={Link} to="/currency" className="text-white">Currency</Nav.Link>
             <Nav.Link as={Link} to="/about" className="text-white">About</Nav.Link>
           </Nav>
@@ -85,15 +86,22 @@ const Header: React.FC = () => {
                         <UserCheck size={16} className="me-2" />
                         Tour Guide Profile
                       </Dropdown.Item>
+                      <Dropdown.Item as={Link} to="/guide-bookings">
+                        <Calendar size={16} className="me-2" />
+                        My Tour Bookings
+                      </Dropdown.Item>
                     </>
                   ) : (
-                    <Dropdown.Item as={Link} to="/profile">
-                      <User size={16} className="me-2" />
-                      Profile
-                    </Dropdown.Item>
-                  )}
-                  {(user?.role?.toLowerCase() === 'user' || user?.role?.toLowerCase() === 'tourguide') && (
-                    <Dropdown.Item as={Link} to="/bookings">My Bookings</Dropdown.Item>
+                    <>
+                      <Dropdown.Item as={Link} to="/profile">
+                        <User size={16} className="me-2" />
+                        Profile
+                      </Dropdown.Item>
+                      <Dropdown.Item as={Link} to="/bookings">
+                        <Calendar size={16} className="me-2" />
+                        My Bookings
+                      </Dropdown.Item>
+                    </>
                   )}
                   <Dropdown.Divider />
                   <Dropdown.Item onClick={handleLogout}>

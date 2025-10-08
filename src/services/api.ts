@@ -14,7 +14,13 @@ import type {
   VerificationStatus,
   ChatMessage,
   ChatResponse,
-  ChatConversation
+  ChatConversation,
+  Plan,
+  CreatePlanDto,
+  UpdatePlanDto,
+  Subscription,
+  CreateSubscriptionRequestDto,
+  PaymentResult
 } from '../types';
 import { config } from '../config';
 
@@ -172,6 +178,14 @@ export interface CreateTourGuideBookingDto {
   endDate: string;
   notes?: string;
   location?: string;
+}
+
+export interface UpdateTourGuideBookingDto {
+  startDate?: string;
+  endDate?: string;
+  notes?: string;
+  location?: string;
+  status?: string;
 }
 
 export interface TourGuideReviewDto {
@@ -431,9 +445,15 @@ export const tourGuideBookingService = {
     await api.delete(`/tourguidebookings/${id}`);
   },
 
-  // Update booking status
+  // Update booking
+  update: async (id: number, data: UpdateTourGuideBookingDto): Promise<TourGuideBookingDto> => {
+    const response = await api.put(`/tourguidebookings/${id}`, data);
+    return response.data;
+  },
+  
+  // Update booking status (convenience method)
   updateStatus: async (id: number, status: string): Promise<TourGuideBookingDto> => {
-    const response = await api.patch(`/tourguidebookings/${id}/status`, { status });
+    const response = await api.put(`/tourguidebookings/${id}`, { status });
     return response.data;
   },
 };
@@ -595,4 +615,38 @@ export const chatbotApi = {
   // Health check
   healthCheck: (): Promise<{ status: string }> =>
     api.get('/chatbot/health').then(res => res.data),
+};
+
+// Plan API
+export const planAPI = {
+  // Get all active plans
+  getAllPlans: (): Promise<Plan[]> => 
+    api.get('/plans').then(res => res.data),
+
+  // Get plan by ID
+  getPlanById: (id: number): Promise<Plan> =>
+    api.get(`/plans/${id}`).then(res => res.data),
+
+  // Admin only - Create plan
+  createPlan: (data: CreatePlanDto): Promise<Plan> =>
+    api.post('/plans', data).then(res => res.data),
+
+  // Admin only - Update plan
+  updatePlan: (id: number, data: UpdatePlanDto): Promise<Plan> =>
+    api.put(`/plans/${id}`, data).then(res => res.data),
+
+  // Admin only - Delete plan
+  deletePlan: (id: number): Promise<void> =>
+    api.delete(`/plans/${id}`).then(res => res.data),
+};
+
+// Subscription API
+export const subscriptionAPI = {
+  // Create subscription and get payment link
+  createSubscription: (data: CreateSubscriptionRequestDto): Promise<PaymentResult> =>
+    api.post('/subscriptions', data).then(res => res.data),
+
+  // Get user's current subscription
+  getMySubscription: (): Promise<Subscription> =>
+    api.get('/subscriptions/me').then(res => res.data),
 };
