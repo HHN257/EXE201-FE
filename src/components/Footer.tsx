@@ -46,7 +46,7 @@ const Footer: React.FC = () => {
             </div>
             <div className="mb-2">
               <MapPin size={16} className="me-2" style={{ display: 'inline' }} />
-              <span>Vinhomes Grand Park, Thu Duc City, Ho Chi Minh City</span>
+              <span>Thu Duc City, Ho Chi Minh City</span>
             </div>
             <div className="mb-2">
               <Phone size={16} className="me-2" style={{ display: 'inline' }} />
@@ -54,7 +54,7 @@ const Footer: React.FC = () => {
             </div>
             <div className="mb-2">
               <Mail size={16} className="me-2" style={{ display: 'inline' }} />
-              <span>vietgo@gmail.com</span>
+              <span>goldentigervietgo@gmail.com</span>
             </div>
           </Col>
 
