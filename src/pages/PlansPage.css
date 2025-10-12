@@ -1,71 +1,140 @@
-/* PlansPage specific styles */
 .plans-page {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
-  padding-top: 2rem;
-}
-
-.current-plan-section {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 15px;
-  padding: 2rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-}
-
-.plan-card {
-  transition: all 0.3s ease;
-  border-radius: 15px;
-  overflow: hidden;
-}
-
-.plan-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-}
-
-.current-plan-card {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f1419 100%);
   position: relative;
-  overflow: hidden;
 }
 
-.current-plan-card::before {
+.plans-page::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #28a745, #20c997);
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+  pointer-events: none;
 }
 
-.plan-features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0.5rem;
+.single-plan-enhanced {
+  padding: 2rem 0;
 }
 
-.feature-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  padding: 0.25rem 0;
+.single-plan-enhanced .card {
+  border-radius: 1rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.plan-price-highlight {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.single-plan-enhanced .card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 1rem 3rem rgba(0,0,0,0.175) !important;
 }
 
+.single-plan-enhanced .card-header {
+  border-radius: 1rem 1rem 0 0 !important;
+  background: linear-gradient(135deg, #4c63d2 0%, #6c5ce7 50%, #a29bfe 100%) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.single-plan-enhanced .card-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.single-plan-enhanced .card:hover .card-header::before {
+  left: 100%;
+}
+
+.font-weight-medium {
+  font-weight: 500;
+}
+
+.badge-pill {
+  border-radius: 50rem;
+}
+
+/* Trust indicators hover effect */
+.single-plan-enhanced .p-3:hover {
+  transform: translateY(-3px);
+  transition: transform 0.2s ease;
+}
+
+/* Multiple plans card styling */
+.plan-card {
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+
+.plan-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 1rem 3rem rgba(0,0,0,0.175) !important;
+}
+
+/* Button enhancements */
+.btn-primary {
+  background: linear-gradient(135deg, #4c63d2 0%, #6c5ce7 50%, #a29bfe 100%);
+  border: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.3s ease;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #7b6bec 50%, #b3a9ff 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1.5rem rgba(76, 99, 210, 0.4);
+}
+
+.btn-primary:disabled {
+  background: #6c757d;
+  opacity: 0.65;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
-  .plans-page {
-    padding-top: 1rem;
+  .single-plan-enhanced .card-header .display-4 {
+    font-size: 2rem;
   }
   
-  .current-plan-section {
-    padding: 1.5rem;
-    margin: 0 1rem;
+  .single-plan-enhanced .card-body {
+    padding: 2rem 1.5rem !important;
   }
+}
+
+/* Icon animations */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.single-plan-enhanced .lucide:hover {
+  animation: pulse 0.5s ease-in-out;
 }
