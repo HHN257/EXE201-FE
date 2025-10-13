@@ -115,36 +115,15 @@ const LoginPage = () => {
                     </div>
                   </Form.Group>
 
-                  <div className="d-flex justify-content-between align-items-center mb-4">
-                    <Form.Check 
-                      type="checkbox" 
-                      id="remember-me" 
-                      label="Remember me"
-                    />
-                    <Link to="/forgot-password" className="text-decoration-none">
-                      Forgot password?
-                    </Link>
-                  </div>
-
                   <Button
                     type="submit"
-                    className="w-100 mb-3"
+                    className="w-100 mb-4"
                     variant="primary"
                     disabled={isLoading}
                   >
                     {isLoading ? 'Signing in...' : 'Sign In'}
                   </Button>
                 </Form>
-
-                {/* Divider */}
-                <div className="text-center mb-3">
-                  <small className="text-muted">or</small>
-                </div>
-
-                {/* Social Login */}
-                <Button variant="outline-secondary" className="w-100 mb-3">
-                  Continue with Google
-                </Button>
 
                 {/* Register Link */}
                 <div className="text-center">
