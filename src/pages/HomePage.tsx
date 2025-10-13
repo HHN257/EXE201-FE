@@ -14,49 +14,33 @@ const HomePage: React.FC = () => {
   const [popularLocations, setPopularLocations] = useState<Location[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch popular destinations from API
         try {
+          console.log('Fetching destinations from API...');
           const locations = await apiService.getAllLocations(1, 6);
-          setPopularLocations(locations);
-        } catch (error) {
-          console.log('Using mock location data due to API error:', error);
-          setPopularLocations([
-            {
-              id: 1,
-              name: 'Ha Long Bay',
-              address: 'Quang Ninh Province, Vietnam',
-              placeType: 'tourist_attraction',
-              rating: 4.8,
-              userReview: 'UNESCO World Heritage site with stunning limestone karsts',
-              isActive: true,
-              createdAt: '2024-01-01T00:00:00Z'
-            },
-            {
-              id: 2,
-              name: 'Hoi An Ancient Town',
-              address: 'Hoi An, Quang Nam Province, Vietnam',
-              placeType: 'tourist_attraction',
-              rating: 4.7,
-              userReview: 'Charming ancient town with lantern-lit streets',
-              isActive: true,
-              createdAt: '2024-01-01T00:00:00Z'
-            },
-            {
-              id: 3,
-              name: 'Sapa Rice Terraces',
-              address: 'Sapa, Lao Cai Province, Vietnam',
-              placeType: 'tourist_attraction',
-              rating: 4.6,
-              userReview: 'Breathtaking mountain landscapes and ethnic culture',
-              isActive: true,
-              createdAt: '2024-01-01T00:00:00Z'
-            }
-          ]);
+          
+          if (locations && locations.length > 0) {
+            console.log(`Successfully fetched ${locations.length} destinations from API`);
+            setPopularLocations(locations);
+          } else {
+            console.log('No locations returned from API, using mock data');
+            setPopularLocations(getMockLocations());
+          }
+        } catch (apiError) {
+          console.warn('API call failed, using mock data:', apiError);
+          setError('Unable to load latest destinations. Showing featured locations.');
+          setPopularLocations(getMockLocations());
         }
 
+        // Set static categories (these don't come from API)
         setCategories([
           { id: '1', name: 'Food & Dining', description: 'Local restaurants and street food', iconUrl: '🍜' },
           { id: '2', name: 'Transportation', description: 'Taxis, motorbikes, and tours', iconUrl: '🚗' },
@@ -66,15 +50,88 @@ const HomePage: React.FC = () => {
           { id: '6', name: 'Health & Wellness', description: 'Spas, clinics, and wellness centers', iconUrl: '💆' }
         ]);
 
-        setLoading(false);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error in fetchData:', error);
+        setError('Failed to load destinations. Please try again later.');
+        // Fallback to mock data in case of any error
+        setPopularLocations(getMockLocations());
+      } finally {
         setLoading(false);
       }
     };
 
     fetchData();
   }, []);
+
+  // Helper function for mock data
+  const getMockLocations = (): Location[] => [
+    {
+      id: 1,
+      name: 'Ha Long Bay',
+      address: 'Quang Ninh Province, Vietnam',
+      placeType: 'tourist_attraction',
+      rating: 4.8,
+      userReview: 'UNESCO World Heritage site with stunning limestone karsts and emerald waters',
+      isActive: true,
+      createdAt: '2024-01-01T00:00:00Z',
+      imageUrl: 'https://images.unsplash.com/photo-1528127269322-539801943592?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+    },
+    {
+      id: 2,
+      name: 'Hoi An Ancient Town',
+      address: 'Hoi An, Quang Nam Province, Vietnam',
+      placeType: 'tourist_attraction',
+      rating: 4.7,
+      userReview: 'Charming ancient town with lantern-lit streets and rich cultural heritage',
+      isActive: true,
+      createdAt: '2024-01-01T00:00:00Z',
+      imageUrl: 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+    },
+    {
+      id: 3,
+      name: 'Sapa Rice Terraces',
+      address: 'Sapa, Lao Cai Province, Vietnam',
+      placeType: 'tourist_attraction',
+      rating: 4.6,
+      userReview: 'Breathtaking mountain landscapes and ethnic minority culture',
+      isActive: true,
+      createdAt: '2024-01-01T00:00:00Z',
+      imageUrl: 'https://images.unsplash.com/photo-1583417267826-aebc4d1542e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+    },
+    {
+      id: 4,
+      name: 'Phong Nha-Ke Bang National Park',
+      address: 'Quang Binh Province, Vietnam',
+      placeType: 'tourist_attraction',
+      rating: 4.5,
+      userReview: 'Amazing cave systems and pristine jungle landscapes',
+      isActive: true,
+      createdAt: '2024-01-01T00:00:00Z',
+      imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+    },
+    {
+      id: 5,
+      name: 'Mekong Delta',
+      address: 'Can Tho Province, Vietnam',
+      placeType: 'tourist_attraction',
+      rating: 4.4,
+      userReview: 'Floating markets and traditional river life experience',
+      isActive: true,
+      createdAt: '2024-01-01T00:00:00Z',
+      imageUrl: 'https://images.unsplash.com/photo-1586436406288-bab4001a9658?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+    },
+    {
+      id: 6,
+      name: 'Mui Ne Sand Dunes',
+      address: 'Phan Thiet, Binh Thuan Province, Vietnam',
+      placeType: 'tourist_attraction',
+      rating: 4.3,
+      userReview: 'Stunning red and white sand dunes perfect for sandboarding',
+      isActive: true,
+      createdAt: '2024-01-01T00:00:00Z',
+      imageUrl: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+    }
+  ];
 
   if (loading) {
     return (
@@ -152,6 +209,12 @@ const HomePage: React.FC = () => {
               <p className="lead text-muted">
                 Explore Vietnam's most beloved locations
               </p>
+              {error && (
+                <div className="alert alert-warning py-2 px-3 small" role="alert">
+                  <i className="bi bi-exclamation-triangle me-2"></i>
+                  {error}
+                </div>
+              )}
             </Col>
             <Col xs="auto">
               <Button 
@@ -184,15 +247,20 @@ const HomePage: React.FC = () => {
                   <div className="position-relative overflow-hidden" style={{ height: '200px' }}>
                     <Card.Img
                       variant="top"
-                      src={`https://images.unsplash.com/photo-1528127269322-539801943592?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80`}
+                      src={location.imageUrl || `https://images.unsplash.com/photo-1528127269322-539801943592?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`}
                       alt={location.name}
                       className="h-100 w-100 object-fit-cover"
                       style={{ transition: 'transform 0.3s' }}
+                      onError={(e) => {
+                        // Fallback to a default image if the API image fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.src = `https://images.unsplash.com/photo-1528127269322-539801943592?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`;
+                      }}
                     />
                     <div className="position-absolute top-0 end-0 m-3">
                       <span className="bg-white rounded-pill px-2 py-1 d-flex align-items-center small">
                         <Star size={14} className="text-warning me-1" fill="currentColor" />
-                        {location.rating || 0}
+                        {location.rating?.toFixed(1) || '0.0'}
                       </span>
                     </div>
                   </div>

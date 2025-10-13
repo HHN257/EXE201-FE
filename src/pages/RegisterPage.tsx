@@ -387,23 +387,13 @@ const RegisterPage = () => {
 
                   <Button
                     type="submit"
-                    className="w-100 mb-3"
+                    className="w-100 mb-4"
                     variant="primary"
                     disabled={isLoading}
                   >
                     {isLoading ? 'Creating Account...' : 'Create Account'}
                   </Button>
                 </Form>
-
-                {/* Divider */}
-                <div className="text-center mb-3">
-                  <small className="text-muted">or</small>
-                </div>
-
-                {/* Social Login */}
-                <Button variant="outline-secondary" className="w-100 mb-3">
-                  Continue with Google
-                </Button>
 
                 {/* Login Link */}
                 <div className="text-center">
