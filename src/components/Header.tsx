@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { subscriptionAPI } from '../services/api';
 import type { Subscription } from '../types';
 import Logo from '../assets/VietGo_Word.png';
+import LogoVietGo_BlueBG from '../assets/LogoVietGo_BlueBG.png';
 
 const Header: React.FC = () => {
   const { isAuthenticated, user, logout, getRoleBasedDashboard } = useAuth();
@@ -63,6 +64,11 @@ const Header: React.FC = () => {
         <Container fluid className="px-3 px-lg-5">
           {/* Logo */}
           <Navbar.Brand as={Link} to="/" className="d-flex align-items-center fw-bold fs-3" style={{ color: '#29499c' }}>
+            <img 
+              src={LogoVietGo_BlueBG} 
+              alt="VietGo Blue Background Logo" 
+              style={{ height: '55px', width: '55px', marginRight: '8px' }}
+            />
             <img 
               src={Logo} 
               alt="VietGo Logo" 

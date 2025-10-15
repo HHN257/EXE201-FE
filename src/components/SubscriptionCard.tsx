@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Alert, Badge, Spinner, Row, Col } from 'react-bootstrap';
+import { Card, Alert, Spinner, Row, Col } from 'react-bootstrap';
 import { Crown, Calendar, CreditCard, ArrowUpCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { subscriptionAPI } from '../services/api';
@@ -27,38 +27,12 @@ const SubscriptionCard: React.FC = () => {
     }
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(price);
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
     });
-  };
-
-  const getStatusVariant = (status: string | number) => {
-    const statusString = typeof status === 'number' ? 
-      (status === 1 ? 'Active' : status === 0 ? 'Pending' : status === 2 ? 'Canceled' : 'Expired') : 
-      status;
-      
-    switch (statusString) {
-      case 'Active':
-        return 'success';
-      case 'Pending':
-        return 'warning';
-      case 'Expired':
-        return 'secondary';
-      case 'Canceled':
-        return 'danger';
-      default:
-        return 'secondary';
-    }
   };
 
   const getDaysRemaining = (endDate: string) => {
@@ -125,31 +99,7 @@ const SubscriptionCard: React.FC = () => {
           </Alert>
         )}
 
-        <Row className="mb-3">
-          <Col>
-            <h6 className="text-primary mb-2">{subscription.planName || subscription.plan?.name || 'Active Plan'}</h6>
-            {subscription.plan?.description && (
-              <p className="text-muted small mb-0">{subscription.plan.description}</p>
-            )}
-          </Col>
-        </Row>
 
-        <Row className="mb-3">
-          <Col sm={6}>
-            <strong>Status:</strong>
-            <div>
-              <Badge bg={getStatusVariant(subscription.status)} className="ms-2">
-                {subscription.status}
-              </Badge>
-            </div>
-          </Col>
-          <Col sm={6}>
-            <strong>Price:</strong>
-            <div className="text-success fw-bold">
-              {subscription.plan?.price ? formatPrice(subscription.plan.price) : 'N/A'}
-            </div>
-          </Col>
-        </Row>
 
         {subscription.startedDate && (
           <Row className="mb-3">

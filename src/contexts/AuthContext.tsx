@@ -14,6 +14,7 @@ interface AuthContextType extends AuthState {
   register: (userData: RegisterData) => Promise<{ redirectTo: string }>;
   logout: () => void;
   getRoleBasedDashboard: () => string;
+  getLoginRedirect: (role?: string) => string;
 }
 
 interface RegisterData {
@@ -196,8 +197,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('user', JSON.stringify(data.user)); // Store user data as backup
       dispatch({ type: 'LOGIN_SUCCESS', payload: data });
       
-      // Return role-based redirect
-      const redirectTo = getRoleBasedDashboard(data.user.role);
+      // Return role-based redirect for login
+      const redirectTo = getLoginRedirect(data.user.role);
       return { redirectTo };
     } catch (error) {
       dispatch({ type: 'LOGIN_FAILURE' });
@@ -213,8 +214,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('user', JSON.stringify(data.user)); // Store user data as backup
       dispatch({ type: 'LOGIN_SUCCESS', payload: data });
       
-      // Return role-based redirect
-      const redirectTo = getRoleBasedDashboard(data.user.role);
+      // Return role-based redirect for registration
+      const redirectTo = getLoginRedirect(data.user.role);
       return { redirectTo };
     } catch (error) {
       dispatch({ type: 'LOGIN_FAILURE' });
@@ -223,6 +224,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const getRoleBasedDashboard = (role?: string) => {
+    // Always prioritize the passed role parameter first
+    const userRole = role || state.user?.role || 'user';
+    switch (userRole.toLowerCase()) {
+      case 'admin':
+        return '/admin/dashboard';
+      case 'staff':
+        return '/staff/dashboard';
+      case 'tourguide':
+        return '/guide/dashboard';
+      case 'user':
+      default:
+        return '/dashboard';
+    }
+  };
+
+  const getLoginRedirect = (role?: string) => {
     // Always prioritize the passed role parameter first
     const userRole = role || state.user?.role || 'user';
     switch (userRole.toLowerCase()) {
@@ -245,7 +262,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout, getRoleBasedDashboard }}>
+    <AuthContext.Provider value={{ ...state, login, register, logout, getRoleBasedDashboard, getLoginRedirect }}>
       {children}
     </AuthContext.Provider>
   );
