@@ -4,11 +4,12 @@ import { Check, Crown, Zap, Star } from 'lucide-react';
 import { planAPI, subscriptionAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import QRPaymentModal from '../components/QRPaymentModal';
-import type { Plan, PaymentResult } from '../types';
+import type { Plan, PaymentResult, Subscription } from '../types';
 import './PlansPage.css';
 
 const PlansPage: React.FC = () => {
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [currentSubscription, setCurrentSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [processingPlanId, setProcessingPlanId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +21,10 @@ const PlansPage: React.FC = () => {
 
   useEffect(() => {
     fetchPlans();
-  }, []);
+    if (isAuthenticated) {
+      fetchCurrentSubscription();
+    }
+  }, [isAuthenticated]);
 
   const fetchPlans = async () => {
     try {
@@ -34,9 +38,27 @@ const PlansPage: React.FC = () => {
     }
   };
 
+  const fetchCurrentSubscription = async () => {
+    try {
+      const subscription = await subscriptionAPI.getMySubscription();
+      setCurrentSubscription(subscription);
+      console.log(subscription);
+    } catch (error) {
+      console.error('Error fetching subscription:', error);
+      // Don't set error state here as not having a subscription is normal
+      setCurrentSubscription(null);
+    }
+  };
+
   const handleSubscribe = (plan: Plan) => {
     if (!isAuthenticated) {
       setError('Please log in to subscribe to a plan.');
+      return;
+    }
+
+    // Check if user already has an active subscription to this plan
+    if (isUserSubscribedToPlan(plan)) {
+      setError('You are already subscribed to this plan.');
       return;
     }
     
@@ -58,6 +80,11 @@ const PlansPage: React.FC = () => {
 
       setPaymentResult(result);
       setShowQRModal(true);
+      
+      // Refresh current subscription after successful payment initiation
+      if (isAuthenticated) {
+        fetchCurrentSubscription();
+      }
       
     } catch (error) {
       console.error('Error creating subscription:', error);
@@ -95,8 +122,66 @@ const PlansPage: React.FC = () => {
     }
   };
 
-  const canSubscribe = () => {
-    return isAuthenticated;
+  const isUserSubscribedToPlan = (plan: Plan): boolean => {
+    if (!currentSubscription) {
+      console.log('No current subscription');
+      return false;
+    }
+    
+    console.log('Checking subscription:', {
+      currentSubscription,
+      planName: plan.name,
+      currentPlanName: currentSubscription.planName,
+      status: currentSubscription.status,
+      isMatchingPlan: currentSubscription.planName === plan.name,
+      isActive: currentSubscription.status === 'Active' || currentSubscription.status === 1
+    });
+    
+    // Check if user has an active subscription
+    const isActive = currentSubscription.status === 'Active' || 
+                     currentSubscription.status === 1;
+    
+    // Check if plan names match (case-insensitive comparison)
+    const currentPlanName = (currentSubscription.planName || '').toLowerCase().trim();
+    const targetPlanName = (plan.name || '').toLowerCase().trim();
+    
+    const isMatchingPlan = currentPlanName === targetPlanName;
+    
+    const isSubscribed = isMatchingPlan && isActive;
+           
+    console.log('Is subscribed:', isSubscribed, {
+      currentPlanName,
+      targetPlanName,
+      isMatchingPlan,
+      isActive
+    });
+    return isSubscribed;
+  };
+
+  const canSubscribe = (plan: Plan) => {
+    const result = isAuthenticated && !isUserSubscribedToPlan(plan);
+    console.log('canSubscribe result for plan', plan.name, ':', result, {
+      isAuthenticated,
+      isUserSubscribedToPlan: isUserSubscribedToPlan(plan)
+    });
+    return result;
+  };
+
+  const getSubscriptionButtonText = (plan: Plan): string => {
+    if (!isAuthenticated) {
+      return 'Login to Subscribe';
+    }
+    if (isUserSubscribedToPlan(plan)) {
+      return 'Currently Subscribed';
+    }
+    return 'Subscribe Now';
+  };
+
+  const getSubscriptionButtonVariant = (plan: Plan): string => {
+    if (isUserSubscribedToPlan(plan)) {
+      return 'secondary';
+    }
+    return 'primary';
   };
 
   if (loading) {
@@ -222,14 +307,14 @@ const PlansPage: React.FC = () => {
                               </p>
                             </Col>
                             <Col md={5} className="order-1 order-md-2">
-                              {!canSubscribe() ? (
+                              {!canSubscribe(plan) ? (
                                 <Button 
-                                  variant="secondary" 
+                                  variant={getSubscriptionButtonVariant(plan)}
                                   size="lg" 
                                   className="w-100"
                                   disabled
                                 >
-                                  {!isAuthenticated ? 'Login Required' : 'Already Subscribed'}
+                                  {getSubscriptionButtonText(plan)}
                                 </Button>
                               ) : (
                                 <Button
@@ -335,9 +420,14 @@ const PlansPage: React.FC = () => {
                     </div>
 
                     <div className="mt-4">
-                      {!canSubscribe() ? (
-                        <Button variant="secondary" size="lg" className="w-100" disabled>
-                          {!isAuthenticated ? 'Login Required' : 'Already Subscribed'}
+                      {!canSubscribe(plan) ? (
+                        <Button 
+                          variant={getSubscriptionButtonVariant(plan)}
+                          size="lg" 
+                          className="w-100" 
+                          disabled
+                        >
+                          {getSubscriptionButtonText(plan)}
                         </Button>
                       ) : (
                         <Button

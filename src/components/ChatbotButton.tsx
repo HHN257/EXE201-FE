@@ -59,7 +59,7 @@ export const ChatbotButton: React.FC = () => {
       // Use the conversation API to maintain history
       const chatRequest: ChatMessage = {
         message: messageText,
-        context: 'SmartTravel chatbot conversation',
+        context: 'Viet Go chatbot conversation',
         language: 'en' // You can make this dynamic based on user preference
       };
 
@@ -172,7 +172,7 @@ export const ChatbotButton: React.FC = () => {
                 ></div>
               </div>
               <div>
-                <h6 className="text-white fw-bold mb-0">SmartTravel AI</h6>
+                <h6 className="text-white fw-bold mb-0">Viet Go AI</h6>
                 <div className="d-flex align-items-center" style={{ gap: '0.5rem' }}>
                   <div 
                     className="rounded-circle"
@@ -207,7 +207,7 @@ export const ChatbotButton: React.FC = () => {
           >
             {messages.length === 0 && !isLoading && (
               <div className="text-center text-light mt-5">
-                <h6 className="text-white mb-2">Welcome to SmartTravel AI!</h6>
+                <h6 className="text-white mb-2">Welcome to Viet Go AI!</h6>
                 <p className="small text-white-50 mb-3" style={{ maxWidth: '250px', margin: '0 auto' }}>
                   I'm your personal travel assistant. Ask me about destinations, tour guides, bookings, or planning tips!
                 </p>
