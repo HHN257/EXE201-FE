@@ -153,6 +153,40 @@ const TourGuidesPage: React.FC = () => {
 
       {error && <Alert variant="danger">{error}</Alert>}
 
+      {/* Top 3 Tour Guides Section */}
+      {tourGuides.length > 0 && (
+        <div className="mb-5">
+          <div className="text-center mb-4">
+            <h2 className="h3 fw-bold text-primary mb-2">🌟 Top Rated Tour Guides</h2>
+            <p className="text-muted">Meet our highest-rated and most experienced guides</p>
+          </div>
+          <Row className="g-4 justify-content-center">
+            {tourGuides
+              .filter(guide => guide.rating && guide.rating > 0)
+              .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+              .slice(0, 3)
+              .map((guide, index) => (
+                <Col key={guide.id} lg={4} md={6}>
+                  <Card className="h-100 border-0 shadow-lg position-relative">
+                    {/* Top Rank Badge */}
+                    <div className="position-absolute top-0 start-0 z-3 m-3">
+                      <span className={`badge ${index === 0 ? 'bg-warning' : index === 1 ? 'bg-secondary' : 'bg-dark'} text-dark fw-bold px-3 py-2 rounded-pill`}>
+                        #{index + 1} {index === 0 ? '👑' : index === 1 ? '🥈' : '🥉'}
+                      </span>
+                    </div>
+                    <TourGuideCard 
+                      tourGuide={guide} 
+                      onBook={handleBookTourGuide}
+                    />
+                  </Card>
+                </Col>
+              ))
+            }
+          </Row>
+          <hr className="my-5" />
+        </div>
+      )}
+
       {/* Search and Filters */}
       <Card className="mb-4">
         <Card.Body>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from 'lucide-react';
-import Logo from '../assets/Logo.png';
+import Logo from '../assets/LogoVietGo_WhiteBG.png';
 
 const Footer: React.FC = () => {
   return (
@@ -16,19 +16,25 @@ const Footer: React.FC = () => {
               </h5>
             </div>
             <div className="d-flex align-items-center mb-4">
-              <div className="bg-white rounded-circle p-3" style={{ width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="bg-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: '80px', height: '80px', padding: '8px' }}>
                 <img 
                   src={Logo} 
                   alt="VietGo Logo" 
-                  style={{ maxWidth: '50px', maxHeight: '50px', objectFit: 'contain' }}
+                  style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'contain',
+                    display: 'block',
+                    margin: 'auto'
+                  }}
                 />
               </div>
             </div>
             <div className="d-flex gap-3">
-              <a href="#" className="text-white" style={{ fontSize: '1.5rem' }}>
+              <a href="https://www.facebook.com/profile.php?id=61581639685084" target="_blank" rel="noopener noreferrer" className="text-white" style={{ fontSize: '1.5rem' }}>
                 <Facebook />
               </a>
-              <a href="#" className="text-white" style={{ fontSize: '1.5rem' }}>
+              <a href="https://www.instagram.com/vietgo_2025/?__coig_challenged=1" target="_blank" rel="noopener noreferrer" className="text-white" style={{ fontSize: '1.5rem' }}>
                 <Instagram />
               </a>
               <a href="#" className="text-white" style={{ fontSize: '1.5rem' }}>

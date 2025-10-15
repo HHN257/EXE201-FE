@@ -5,6 +5,17 @@ import { Search, Star, MapPin } from 'lucide-react';
 import { apiService } from '../services/api';
 import type { Location, LocationSearchDto } from '../types';
 
+// Place types for filtering (moved outside component to avoid dependency issues)
+const placeTypes = [
+  'All Types',
+  'tourist_attraction',
+  'restaurant',
+  'hotel',
+  'museum',
+  'park',
+  'beach'
+];
+
 const DestinationsPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,16 +24,19 @@ const DestinationsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Place types for filtering
-  const placeTypes = [
-    'All Types',
-    'tourist_attraction',
-    'restaurant',
-    'hotel',
-    'museum',
-    'park',
-    'beach'
-  ];
+  // Initialize from URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const placeTypeParam = urlParams.get('placeType');
+    const searchParam = urlParams.get('search');
+    
+    if (placeTypeParam && placeTypes.includes(placeTypeParam)) {
+      setSelectedPlaceType(placeTypeParam);
+    }
+    if (searchParam) {
+      setSearchTerm(searchParam);
+    }
+  }, []);
 
   // Fetch locations on component mount
   useEffect(() => {

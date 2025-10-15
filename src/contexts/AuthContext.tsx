@@ -234,7 +234,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return '/guide/dashboard';
       case 'user':
       default:
-        return '/dashboard';
+        return '/';
     }
   };
 

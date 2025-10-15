@@ -355,7 +355,7 @@ const HomePage: React.FC = () => {
                 <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center" style={{ zIndex: 3, position: 'relative' }}>
                   <Button 
                     size="lg" 
-                    className="bg-white text-primary fw-semibold border-0"
+                    className="bg-white text-white fw-semibold border-0"
                     style={{ transition: 'transform 0.2s, box-shadow 0.2s', zIndex: 4, position: 'relative' }}
                     onClick={() => navigate('/register')}
                     onMouseEnter={(e) => {

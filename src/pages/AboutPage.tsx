@@ -2,7 +2,7 @@ import React from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import { Users, Heart, Globe, Award } from 'lucide-react';
 
-import vnImage from '../assets/vn land.jpg';
+import vnImage from '../assets/vnLs3.jpg';
 
 const AboutPage: React.FC = () => {
   const features = [
@@ -75,7 +75,7 @@ const AboutPage: React.FC = () => {
         <Container>
           <Row className="text-center">
             <Col lg={8} className="mx-auto">
-              <h1 className="display-4 fw-bold mb-4">About SmartTravel</h1>
+              <h1 className="display-4 fw-bold mb-4">About Viet Go</h1>
               <p className="lead mb-0">
                 Connecting travelers with authentic Vietnam through local expertise and genuine experiences
               </p>
@@ -91,13 +91,13 @@ const AboutPage: React.FC = () => {
             <Col lg={6}>
               <h2 className="display-5 fw-bold mb-4">Our Mission</h2>
               <p className="lead text-muted mb-4">
-                SmartTravel was born from a simple belief: the best way to experience Vietnam is through the eyes of locals who call it home.
+                Viet Go was born from a simple belief: the best way to experience Vietnam is through the eyes of locals who call it home.
               </p>
               <p className="mb-4">
                 We bridge the gap between curious travelers and passionate locals, creating meaningful connections that enrich both visitors' experiences and local communities. Our platform empowers local guides, service providers, and artisans while offering travelers authentic, personalized experiences they can't find anywhere else.
               </p>
               <p className="mb-0">
-                Whether you're seeking hidden street food gems in Ho Chi Minh City, wanting to learn traditional cooking in Hanoi, or planning an adventure trek in Sapa, SmartTravel connects you with verified local experts who share our passion for authentic Vietnamese culture.
+                Whether you're seeking hidden street food gems in Ho Chi Minh City, wanting to learn traditional cooking in Hanoi, or planning an adventure trek in Sapa, Viet Go connects you with verified local experts who share our passion for authentic Vietnamese culture.
               </p>
             </Col>
             <Col lg={6}>
@@ -116,7 +116,7 @@ const AboutPage: React.FC = () => {
         <Container>
           <Row className="text-center mb-5">
             <Col lg={8} className="mx-auto">
-              <h2 className="display-5 fw-bold mb-4">Why Choose SmartTravel?</h2>
+              <h2 className="display-5 fw-bold mb-4">Why Choose Viet Go?</h2>
               <p className="lead text-muted">
                 We're not just a booking platform – we're your local connection to authentic Vietnam
               </p>
