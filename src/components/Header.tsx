@@ -1,13 +1,41 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, LogOut, Settings, Shield, Crown, UserCheck, Calendar } from 'lucide-react';
+import { User, LogOut, Settings, Shield, Crown, UserCheck, Calendar, Star } from 'lucide-react';
 import { Navbar, Nav, Container, Button, Dropdown, Image } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
+import { subscriptionAPI } from '../services/api';
+import type { Subscription } from '../types';
 import Logo from '../assets/VietGo_Word.png';
 
 const Header: React.FC = () => {
   const { isAuthenticated, user, logout, getRoleBasedDashboard } = useAuth();
   const navigate = useNavigate();
+  const [userSubscription, setUserSubscription] = useState<Subscription | null>(null);
+
+  // Fetch user subscription when authenticated
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      if (isAuthenticated) {
+        try {
+          const subscription = await subscriptionAPI.getMySubscription();
+          setUserSubscription(subscription);
+        } catch (error) {
+          console.log('No active subscription found');
+          setUserSubscription(null);
+        }
+      } else {
+        setUserSubscription(null);
+      }
+    };
+
+    fetchSubscription();
+  }, [isAuthenticated]);
+
+  // Check if user has active subscription
+  const hasActiveSubscription = (): boolean => {
+    if (!userSubscription) return false;
+    return userSubscription.status === 'Active' || userSubscription.status === 1;
+  };
 
   const handleLogout = () => {
     logout();
@@ -43,6 +71,17 @@ const Header: React.FC = () => {
             <span className="fs-6 fw-normal" style={{ color: '#29499c' }}>
               OPEN THE WEB, EMBRACE VIETNAM
             </span>
+            {/* Premium Badge for Subscribed Users */}
+            {hasActiveSubscription() && (
+              <span 
+                className="badge bg-warning text-dark ms-3 d-flex align-items-center"
+                style={{ fontSize: '0.7rem', padding: '4px 8px' }}
+                title={`Premium Member - ${userSubscription?.planName}`}
+              >
+                <Crown size={12} className="me-1" />
+                PREMIUM
+              </span>
+            )}
           </Navbar.Brand>
 
           {/* Right side actions */}
@@ -53,13 +92,36 @@ const Header: React.FC = () => {
                 <Dropdown.Toggle variant="link" className="text-dark text-decoration-none border-0 bg-transparent">
                   <div className="d-flex align-items-center gap-2">
                     {getRoleIcon(user?.role || 'user')}
-                    <span>{user?.name || 'User'}</span>
-                    <div className="rounded-circle overflow-hidden border" style={{ width: '40px', height: '40px' }}>
+                    <div className="d-flex flex-column align-items-start">
+                      <div className="d-flex align-items-center gap-2">
+                        <span>{user?.name || 'User'}</span>
+                        {hasActiveSubscription() && (
+                          <span title="Premium Member">
+                            <Crown size={14} className="text-warning" />
+                          </span>
+                        )}
+                      </div>
+                      {hasActiveSubscription() && (
+                        <small className="text-warning fw-bold" style={{ fontSize: '0.7rem', lineHeight: '1' }}>
+                          Premium
+                        </small>
+                      )}
+                    </div>
+                    <div className="rounded-circle overflow-hidden position-relative" style={{ width: '40px', height: '40px' }}>
                       <Image
                         src={user?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&size=40&background=0d6efd&color=fff`}
                         alt="Profile"
                         className="w-100 h-100 object-fit-cover"
+                        style={{ border: hasActiveSubscription() ? '2px solid #fbbf24' : '1px solid #dee2e6' }}
                       />
+                      {hasActiveSubscription() && (
+                        <div 
+                          className="position-absolute bottom-0 end-0 rounded-circle bg-warning d-flex align-items-center justify-content-center"
+                          style={{ width: '16px', height: '16px', transform: 'translate(25%, 25%)' }}
+                        >
+                          <Crown size={8} className="text-dark" />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Dropdown.Toggle>
@@ -68,6 +130,17 @@ const Header: React.FC = () => {
                     <Settings size={16} className="me-2" />
                     Dashboard
                   </Dropdown.Item>
+                  {hasActiveSubscription() ? (
+                    <Dropdown.Item as={Link} to="/plans">
+                      <Star size={16} className="me-2 text-warning" />
+                      <span className="text-warning fw-semibold">Manage Premium</span>
+                    </Dropdown.Item>
+                  ) : (
+                    <Dropdown.Item as={Link} to="/plans">
+                      <Star size={16} className="me-2" />
+                      Upgrade to Premium
+                    </Dropdown.Item>
+                  )}
                   {user?.role?.toLowerCase() === 'tourguide' ? (
                     <>
                       <Dropdown.Item as={Link} to="/profile">
@@ -123,13 +196,13 @@ const Header: React.FC = () => {
       {/* Second Row: Navigation Tabs */}
       <div className="border-top" style={{ backgroundColor: '#29499c' }}>
         <Container fluid className="px-3 px-lg-5">
-          <Nav className="justify-content-center py-2">
-            <Nav.Link as={Link} to="/destinations" className="text-white mx-2 fw-medium">Destinations</Nav.Link>
-            <Nav.Link as={Link} to="/services" className="text-white mx-2 fw-medium">Services</Nav.Link>
-            <Nav.Link as={Link} to="/tour-guides" className="text-white mx-2 fw-medium">Tour Guides</Nav.Link>
-            <Nav.Link as={Link} to="/plans" className="text-white mx-2 fw-medium">Plans</Nav.Link>
-            <Nav.Link as={Link} to="/currency" className="text-white mx-2 fw-medium">Currency</Nav.Link>
-            <Nav.Link as={Link} to="/about" className="text-white mx-2 fw-medium">About</Nav.Link>
+          <Nav className="justify-content-center py-3">
+            <Nav.Link as={Link} to="/destinations" className="text-white mx-3 fw-medium px-3 py-2">Destinations</Nav.Link>
+            <Nav.Link as={Link} to="/services" className="text-white mx-3 fw-medium px-3 py-2">Services</Nav.Link>
+            <Nav.Link as={Link} to="/tour-guides" className="text-white mx-3 fw-medium px-3 py-2">Tour Guides</Nav.Link>
+            <Nav.Link as={Link} to="/plans" className="text-white mx-3 fw-medium px-3 py-2">Plans</Nav.Link>
+            <Nav.Link as={Link} to="/currency" className="text-white mx-3 fw-medium px-3 py-2">Currency</Nav.Link>
+            <Nav.Link as={Link} to="/about" className="text-white mx-3 fw-medium px-3 py-2">About</Nav.Link>
           </Nav>
         </Container>
       </div>

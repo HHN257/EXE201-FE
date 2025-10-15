@@ -162,36 +162,6 @@ const LocationDetailPage: React.FC = () => {
                 )}
               </Card.Body>
             </Card>
-
-            {/* Additional Info */}
-            <Card className="border-0 shadow-sm">
-              <Card.Body className="p-4">
-                <h3 className="h4 fw-bold mb-3">Location Details</h3>
-                <Row>
-                  <Col md={6}>
-                    {location.placeType && (
-                      <div className="mb-3">
-                        <strong className="text-muted">Place Type:</strong>
-                        <div className="text-capitalize">
-                          {location.placeType.replace('_', ' ')}
-                        </div>
-                      </div>
-                    )}
-                  </Col>
-                  <Col md={6}>
-                    {location.rating && (
-                      <div className="mb-3">
-                        <strong className="text-muted">Rating:</strong>
-                        <div className="d-flex align-items-center">
-                          <Star size={16} className="text-warning me-1" fill="currentColor" />
-                          {location.rating.toFixed(1)} / 5.0
-                        </div>
-                      </div>
-                    )}
-                  </Col>
-                </Row>
-              </Card.Body>
-            </Card>
           </Col>
 
           {/* Sidebar */}

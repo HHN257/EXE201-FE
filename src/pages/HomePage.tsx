@@ -5,7 +5,8 @@ import HomePageWeather from '../components/HomePageWeather';
 import { Star, MapPin, Users, Clock, ArrowRight } from 'lucide-react';
 import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap';
 import type { Location, Category } from '../types';
-import { apiService } from '../services/api';
+import { apiService, tourGuideService } from '../services/api';
+import type { TourGuideDto } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
 const HomePage: React.FC = () => {
@@ -13,8 +14,29 @@ const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [popularLocations, setPopularLocations] = useState<Location[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [topTourGuides, setTopTourGuides] = useState<TourGuideDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Helper function to map homepage categories to services page categories
+  const getCategoryFilter = (categoryName: string): string | null => {
+    const categoryMap: Record<string, string> = {
+      'Food': 'Food & Dining',
+      'Transportation': 'Transportation',
+      'Accommodation': 'Travel & Booking'
+    };
+    return categoryMap[categoryName] || null;
+  };
+
+  const handleCategoryClick = (category: Category) => {
+    const serviceCategory = getCategoryFilter(category.name);
+    if (serviceCategory) {
+      navigate(`/services?category=${encodeURIComponent(serviceCategory)}`);
+    } else {
+      // For Shopping and others, just go to services page without filter
+      navigate('/services');
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,13 +64,31 @@ const HomePage: React.FC = () => {
 
         // Set static categories (these don't come from API)
         setCategories([
-          { id: '1', name: 'Food & Dining', description: 'Local restaurants and street food', iconUrl: '🍜' },
+          { id: '1', name: 'Food', description: 'Local restaurants and street food', iconUrl: '🍜' },
           { id: '2', name: 'Transportation', description: 'Taxis, motorbikes, and tours', iconUrl: '🚗' },
           { id: '3', name: 'Accommodation', description: 'Hotels, hostels, and homestays', iconUrl: '🏨' },
-          { id: '4', name: 'Activities', description: 'Tours, adventures, and experiences', iconUrl: '🎯' },
-          { id: '5', name: 'Shopping', description: 'Markets, malls, and souvenirs', iconUrl: '🛍️' },
-          { id: '6', name: 'Health & Wellness', description: 'Spas, clinics, and wellness centers', iconUrl: '💆' }
+          { id: '4', name: 'Shopping', description: 'Markets, malls, and souvenirs', iconUrl: '🛍️' }
         ]);
+
+        // Fetch top tour guides
+        try {
+          console.log('Fetching top tour guides...');
+          const tourGuides = await tourGuideService.getAll();
+          
+          if (tourGuides && tourGuides.length > 0) {
+            // Sort by rating and take top 3
+            const topGuides = tourGuides
+              .filter(guide => guide.rating && guide.rating > 0)
+              .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+              .slice(0, 3);
+            
+            console.log(`Successfully fetched ${topGuides.length} top tour guides`);
+            setTopTourGuides(topGuides);
+          }
+        } catch (tourGuideError) {
+          console.warn('Failed to fetch tour guides:', tourGuideError);
+          // Don't set error for tour guides as it's not critical for homepage
+        }
 
       } catch (error) {
         console.error('Error in fetchData:', error);
@@ -170,13 +210,13 @@ const HomePage: React.FC = () => {
             </Col>
           </Row>
 
-          <Row className="g-4">
+          <Row className="g-4 justify-content-center">
             {categories.map((category) => (
-              <Col key={category.id} xs={6} md={4} lg={2}>
+              <Col key={category.id} xs={6} sm={4} md={3} lg={2}>
                 <Card 
                   className="card-custom h-100 text-center border-0" 
                   style={{ cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
-                  onClick={() => navigate('/services')}
+                  onClick={() => handleCategoryClick(category)}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-4px)';
                     e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
@@ -204,7 +244,7 @@ const HomePage: React.FC = () => {
           <Row className="align-items-center mb-5">
             <Col>
               <h2 className="display-5 fw-bold mb-3">
-                Popular Destinations
+                VietGo favorite's choice
               </h2>
               <p className="lead text-muted">
                 Explore Vietnam's most beloved locations
@@ -282,8 +322,141 @@ const HomePage: React.FC = () => {
         </Container>
       </section>
 
+      {/* Top Tour Guides Section */}
+      {topTourGuides.length > 0 && (
+        <section className="py-5 bg-white">
+          <Container>
+            <Row className="align-items-center mb-5">
+              <Col>
+                <h2 className="display-5 fw-bold mb-3">
+                  🌟 Top Companions
+                </h2>
+                <p className="lead text-muted">
+                  Meet our highest-rated and most experienced local guides
+                </p>
+              </Col>
+              <Col xs="auto">
+                <Button 
+                  variant="outline-primary" 
+                  className="d-flex align-items-center"
+                  onClick={() => navigate('/tour-guides')}
+                >
+                  View All Guides
+                  <ArrowRight size={16} className="ms-2" />
+                </Button>
+              </Col>
+            </Row>
+
+            <Row className="g-4 justify-content-center">
+              {topTourGuides.map((guide, index) => (
+                <Col key={guide.id} lg={4} md={6}>
+                  <Card 
+                    className="h-100 border-0 shadow-lg position-relative" 
+                    style={{ cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
+                    onClick={() => navigate('/tour-guides')}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-4px)';
+                      e.currentTarget.style.boxShadow = '0 12px 35px rgba(0,0,0,0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '';
+                    }}
+                  >
+                    {/* Top Rank Badge */}
+                    <div className="position-absolute top-0 start-0 z-3 m-3">
+                      <span className={`badge ${index === 0 ? 'bg-warning' : index === 1 ? 'bg-secondary' : 'bg-dark'} text-white fw-bold px-3 py-2 rounded-pill`}>
+                        #{index + 1} {index === 0 ? '👑' : index === 1 ? '🥈' : '🥉'}
+                      </span>
+                    </div>
+
+                    {/* Profile Image */}
+                    <div className="position-relative overflow-hidden" style={{ height: '250px' }}>
+                      <Card.Img
+                        variant="top"
+                        src={guide.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(guide.name)}&size=400&background=random&color=fff`}
+                        alt={guide.name}
+                        className="h-100 w-100 object-fit-cover"
+                        style={{ transition: 'transform 0.3s' }}
+                      />
+                      {/* Rating Badge */}
+                      <div className="position-absolute top-0 end-0 m-3">
+                        <span className="bg-white rounded-pill px-3 py-2 d-flex align-items-center small fw-bold">
+                          <Star size={14} className="text-warning me-1" fill="currentColor" />
+                          {guide.rating?.toFixed(1)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <Card.Body className="p-4">
+                      <div className="d-flex align-items-center mb-2">
+                        <h5 className="fw-bold mb-0 me-2">{guide.name}</h5>
+                        {guide.isVerified && (
+                          <span className="badge bg-success text-white small">✓ Verified</span>
+                        )}
+                      </div>
+                      
+                      {guide.bio && (
+                        <p className="text-muted mb-3 small" style={{ 
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden'
+                        }}>
+                          {guide.bio}
+                        </p>
+                      )}
+
+                      {/* Languages */}
+                      {guide.languages && (
+                        <div className="mb-3">
+                          <small className="text-muted d-block mb-1">Languages:</small>
+                          <div className="d-flex flex-wrap gap-1">
+                            {guide.languages.split(',').slice(0, 3).map((lang, i) => (
+                              <span key={i} className="badge bg-light text-dark small">
+                                {lang.trim()}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Specializations */}
+                      {guide.specializations && (
+                        <div className="mb-3">
+                          <small className="text-muted d-block mb-1">Specializations:</small>
+                          <div className="d-flex flex-wrap gap-1">
+                            {guide.specializations.split(',').slice(0, 2).map((spec, i) => (
+                              <span key={i} className="badge bg-primary text-white small">
+                                {spec.trim()}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Price */}
+                      {guide.hourlyRate && (
+                        <div className="d-flex justify-content-between align-items-center mt-3">
+                          <span className="fw-bold text-primary h6 mb-0">
+                            ${guide.hourlyRate}/hour
+                          </span>
+                          <Button size="sm" variant="primary">
+                            Book Guide
+                          </Button>
+                        </div>
+                      )}
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          </Container>
+        </section>
+      )}
+
       {/* Why Choose SmartTravel */}
-      <section className="py-5 bg-white">
+      <section className="py-5 bg-light">
         <Container>
           <Row>
             <Col lg={8} className="mx-auto text-center mb-5">

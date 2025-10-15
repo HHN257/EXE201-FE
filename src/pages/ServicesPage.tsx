@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Form, InputGroup } from 'react-bootstrap';
 import { Search, MapPin, Star, Users } from 'lucide-react';
 
@@ -15,14 +16,23 @@ interface Service {
 }
 
 const ServicesPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+
+  // Read category from URL parameters on component mount
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('category');
+    if (categoryFromUrl) {
+      setSelectedCategory(categoryFromUrl);
+    }
+  }, [searchParams]);
 
   // Mock data
   const categories = [
     'All Services',
     'Transportation',
-    'Accommodation',
+    'Travel & Booking',
     'Food & Dining',
     'Activities',
     'Shopping'
@@ -72,6 +82,17 @@ const ServicesPage: React.FC = () => {
       rating: 4.7,
       reviewCount: 78,
       imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400'
+    },
+    {
+      id: '5',
+      name: 'Boutique Hotel Booking',
+      description: 'Book authentic Vietnamese boutique hotels and homestays',
+      category: 'Travel & Booking',
+      location: 'Da Nang',
+      priceRange: '$30-80/night',
+      rating: 4.9,
+      reviewCount: 92,
+      imageUrl: 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=400'
     }
   ];
 
