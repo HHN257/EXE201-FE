@@ -8,6 +8,11 @@ import trang from '../assets/trang.jpg';
 import thong from '../assets/thong.jpg';
 
 import vnImage from '../assets/vnLs3.jpg';
+import uyen from '../assets/uyen.jpg';
+import nam from '../assets/nam.jpg';
+import thu from '../assets/thu.jpg';
+import trang from '../assets/trang.jpg';
+import thong from '../assets/thong.jpg';
 
 const AboutPage: React.FC = () => {
   const features = [
