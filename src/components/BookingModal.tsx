@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Form, Button, Alert, Row, Col, Spinner } from 'react-bootstrap';
-import { Calendar, Clock, MapPin, DollarSign } from 'lucide-react';
+import { Calendar, Clock, MapPin, DollarSign, CheckCircle } from 'lucide-react';
 import { tourGuideBookingService } from '../services/api';
 import type { TourGuideDto, CreateTourGuideBookingDto } from '../services/api';
 
@@ -21,6 +21,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ show, onHide, tourGuide, on
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   React.useEffect(() => {
     if (tourGuide) {
@@ -30,6 +31,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ show, onHide, tourGuide, on
       }));
     }
   }, [tourGuide]);
+
+  const handleModalClose = () => {
+    setError(null);
+    setSuccess(false);
+    onHide();
+  };
 
   const calculateTotalPrice = () => {
     if (!formData.startDate || !formData.endDate || !tourGuide?.hourlyRate) {
@@ -54,6 +61,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ show, onHide, tourGuide, on
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccess(false);
     setLoading(true);
 
     try {
@@ -76,17 +84,24 @@ const BookingModal: React.FC<BookingModalProps> = ({ show, onHide, tourGuide, on
         endDate: endDate.toISOString()
       });
 
-      onBookingSuccess?.();
-      onHide();
+      // Show success message
+      setSuccess(true);
       
-      // Reset form
-      setFormData({
-        tourGuideId: tourGuide?.id || 0,
-        startDate: '',
-        endDate: '',
-        notes: '',
-        location: ''
-      });
+      // Auto-hide after 3 seconds
+      setTimeout(() => {
+        setSuccess(false);
+        onBookingSuccess?.();
+        onHide();
+        
+        // Reset form
+        setFormData({
+          tourGuideId: tourGuide?.id || 0,
+          startDate: '',
+          endDate: '',
+          notes: '',
+          location: ''
+        });
+      }, 3000);
     } catch (err) {
       let errorMessage = 'Booking failed. Please try again.';
       if (err && typeof err === 'object' && 'response' in err) {
@@ -113,7 +128,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ show, onHide, tourGuide, on
   const totalPrice = calculateTotalPrice();
 
   return (
-    <Modal show={show} onHide={onHide} size="lg" centered>
+    <Modal show={show} onHide={handleModalClose} size="lg" centered>
       <Modal.Header closeButton>
         <Modal.Title className="d-flex align-items-center">
           <Calendar className="me-2" size={24} />
@@ -124,6 +139,15 @@ const BookingModal: React.FC<BookingModalProps> = ({ show, onHide, tourGuide, on
       <Form onSubmit={handleSubmit}>
         <Modal.Body>
           {error && <Alert variant="danger">{error}</Alert>}
+          {success && (
+            <Alert variant="success" className="d-flex align-items-center">
+              <CheckCircle size={20} className="me-2" />
+              <div>
+                <strong>Booking Confirmed!</strong>
+                <div className="small">Your tour guide booking has been successfully created. You will receive a confirmation email shortly.</div>
+              </div>
+            </Alert>
+          )}
 
           {tourGuide && (
             <div className="mb-4 p-3 bg-light rounded">
@@ -224,18 +248,23 @@ const BookingModal: React.FC<BookingModalProps> = ({ show, onHide, tourGuide, on
         </Modal.Body>
 
         <Modal.Footer>
-          <Button variant="secondary" onClick={onHide} disabled={loading}>
+          <Button variant="secondary" onClick={handleModalClose} disabled={loading || success}>
             Cancel
           </Button>
           <Button 
             variant="primary" 
             type="submit" 
-            disabled={loading || !formData.startDate || !formData.endDate || !formData.location}
+            disabled={loading || success || !formData.startDate || !formData.endDate || !formData.location}
           >
             {loading ? (
               <>
                 <Spinner animation="border" size="sm" className="me-2" />
                 Booking...
+              </>
+            ) : success ? (
+              <>
+                <CheckCircle size={16} className="me-2" />
+                Booking Confirmed!
               </>
             ) : (
               'Confirm Booking'

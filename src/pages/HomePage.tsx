@@ -455,13 +455,12 @@ const HomePage: React.FC = () => {
         </section>
       )}
 
-      {/* Why Choose SmartTravel */}
       <section className="py-5 bg-light">
         <Container>
           <Row>
             <Col lg={8} className="mx-auto text-center mb-5">
               <h2 className="display-5 fw-bold mb-4">
-                Why Choose SmartTravel?
+                Why Choose VietGo?
               </h2>
               <p className="lead text-muted">
                 We're not just another travel platform. We're your local connection to authentic Vietnam.
