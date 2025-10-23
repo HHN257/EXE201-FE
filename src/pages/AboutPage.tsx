@@ -1,6 +1,11 @@
 import React from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import { Users, Heart, Globe, Award } from 'lucide-react';
+import uyen from '../assets/uyen.jpg';
+import nam from '../assets/nam.jpg';
+import thu from '../assets/thu.jpg';
+import trang from '../assets/trang.jpg';
+import thong from '../assets/thong.jpg';
 
 import vnImage from '../assets/vnLs3.jpg';
 
@@ -39,31 +44,31 @@ const AboutPage: React.FC = () => {
     {
       name: 'Hà Phương Uyên',
       role: 'Founder & CEO',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
+      image: uyen,
       description: 'Travel enthusiast with 15 years of experience in Vietnam tourism industry.'
     },
     {
       name: 'Hồ Ngọc Anh Thư',
       role: 'Head of Operations',
-      image: 'https://images.unsplash.com/photo-1494790108755-2616b612b547?w=200',
+      image: thu, 
       description: 'Expert in local partnerships and community development across Vietnam.'
     },
     {
       name: 'Phan Nguyễn Khánh Trang',
       role: 'Technology Director',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200',
+      image: trang,
       description: 'Tech innovator focused on creating seamless travel experiences through technology.'
     },
     {
       name: 'Hoàng Hữu Nam',
       role: 'Technology Director',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200',
+      image: nam,
       description: 'Tech innovator focused on creating seamless travel experiences through technology.'
     },
     {
       name: 'Nguyễn Minh Thông',
       role: 'Technology Director',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200',
+      image: thong,
       description: 'Tech innovator focused on creating seamless travel experiences through technology.'
     }
   ];
