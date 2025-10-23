@@ -127,7 +127,7 @@ export const SimpleChatbotButton: React.FC = () => {
                 <Bot size={16} color="white" />
               </div>
               <div>
-                <h6 className="mb-0 fw-semibold">SmartTravel AI</h6>
+                <h6 className="mb-0 fw-semibold">VietGo AI</h6>
                 <small className="text-white-50">Online</small>
               </div>
             </div>
@@ -151,7 +151,7 @@ export const SimpleChatbotButton: React.FC = () => {
           >
             {messages.length === 0 && !isLoading && (
               <div className="text-center text-muted mt-4">
-                <h6 className="mb-2">Welcome to SmartTravel AI!</h6>
+                <h6 className="mb-2">Welcome to VietGo AI!</h6>
                 <p className="small mb-0">
                   Ask me about destinations, tours, or travel planning!
                 </p>

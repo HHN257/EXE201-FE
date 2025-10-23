@@ -1,11 +1,6 @@
 import React from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import { Users, Heart, Globe, Award } from 'lucide-react';
-import uyen from '../assets/uyen.jpg';
-import nam from '../assets/nam.jpg';
-import thu from '../assets/thu.jpg';
-import trang from '../assets/trang.jpg';
-import thong from '../assets/thong.jpg';
 
 import vnImage from '../assets/vnLs3.jpg';
 import uyen from '../assets/uyen.jpg';
