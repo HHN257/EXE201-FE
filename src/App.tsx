@@ -1,4 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
+import { Toast, ToastContainer } from 'react-bootstrap';
+import { AlertCircle, CheckCircle, AlertTriangle, Info } from 'lucide-react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
@@ -9,6 +11,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import DeepLinkTester from './components/DeepLinkTester';
 import SimpleChatbotButton from './components/SimpleChatbotButton';
 import { useAuth } from './contexts/AuthContext';
+import type { NotificationType } from './contexts/AuthContext';
 import HomePage from './pages/HomePage';
 import EnhancedServicesPage from './pages/EnhancedServicesPage';
 import DestinationsPage from './pages/NewDestinationsPage';
@@ -40,8 +43,37 @@ import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import GuideBookingsPage from './pages/GuideBookingsPage';
 import './App.css';
 
+// Helper functions for notifications
+const getIconByType = (type: NotificationType) => {
+  switch (type) {
+    case 'success':
+      return <CheckCircle size={20} className="text-success" />;
+    case 'error':
+      return <AlertCircle size={20} className="text-danger" />;
+    case 'warning':
+      return <AlertTriangle size={20} className="text-warning" />;
+    case 'info':
+    default:
+      return <Info size={20} className="text-info" />;
+  }
+};
+
+const getBackgroundClass = (type: NotificationType) => {
+  switch (type) {
+    case 'success':
+      return 'bg-success text-white';
+    case 'error':
+      return 'bg-danger text-white';
+    case 'warning':
+      return 'bg-warning text-dark';
+    case 'info':
+    default:
+      return 'bg-info text-white';
+  }
+};
+
 function App() {
-  const { isLoading } = useAuth();
+  const { isLoading, notifications, removeNotification } = useAuth();
 
   // Show loading spinner while checking authentication state
   if (isLoading) {
@@ -165,7 +197,7 @@ function App() {
           path="/admin/users" 
           element={
             <ProtectedRoute>
-              <RoleBasedRoute allowedRoles={['Admin']}>
+              <RoleBasedRoute allowedRoles={['Admin', 'Staff']}>
                 <AdminUserManagement />
               </RoleBasedRoute>
             </ProtectedRoute>
@@ -250,6 +282,44 @@ function App() {
       
       {/* Footer - available on all pages */}
       <Footer />
+
+      {/* Global Notification System */}
+      {notifications.length > 0 && (
+        <ToastContainer 
+          className="position-fixed p-3 top-0 end-0"
+          style={{ 
+            zIndex: 9999,
+            maxHeight: '100vh',
+            overflowY: 'auto'
+          }}
+        >
+          {notifications.map((notification) => (
+            <Toast 
+              key={notification.id}
+              className={`mb-2 shadow-lg border-0 ${getBackgroundClass(notification.type)}`}
+              onClose={() => removeNotification(notification.id)}
+              show={true}
+              autohide={notification.autoClose}
+              delay={notification.duration}
+              style={{ minWidth: '300px' }}
+            >
+              <Toast.Header className={`${getBackgroundClass(notification.type)} border-0`}>
+                <div className="d-flex align-items-center">
+                  {getIconByType(notification.type)}
+                  <strong className="ms-2 me-auto">
+                    {notification.title}
+                  </strong>
+                </div>
+              </Toast.Header>
+              {notification.message && (
+                <Toast.Body className="py-2">
+                  {notification.message}
+                </Toast.Body>
+              )}
+            </Toast>
+          ))}
+        </ToastContainer>
+      )}
     </div>
   );
 }

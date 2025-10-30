@@ -11,7 +11,7 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const { login } = useAuth();
+  const { login, showError, showSuccess } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -26,11 +26,15 @@ const LoginPage = () => {
 
     try {
       const { redirectTo } = await login(email, password);
+      showSuccess('Login successful! Welcome back.');
       // If user was redirected here from a protected route, redirect back there
       // Otherwise, redirect to the default dashboard
       navigate(redirectFrom || redirectTo);
-    } catch {
-      setError('Invalid email or password. Please try again.');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } }; message?: string };
+      const errorMessage = error?.response?.data?.message || error?.message || 'Invalid email or password. Please try again.';
+      showError(errorMessage, 'Login Failed');
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

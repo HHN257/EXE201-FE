@@ -11,7 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, showError } = useAuth();
   const [popularLocations, setPopularLocations] = useState<Location[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [topTourGuides, setTopTourGuides] = useState<TourGuideDto[]>([]);
@@ -58,7 +58,9 @@ const HomePage: React.FC = () => {
           }
         } catch (apiError) {
           console.warn('API call failed, using mock data:', apiError);
-          setError('Unable to load latest destinations. Showing featured locations.');
+          const errorMessage = 'Unable to load latest destinations. Showing featured locations.';
+          setError(errorMessage);
+          showError(errorMessage, 'Loading Error');
           setPopularLocations(getMockLocations());
         }
 
@@ -92,7 +94,9 @@ const HomePage: React.FC = () => {
 
       } catch (error) {
         console.error('Error in fetchData:', error);
-        setError('Failed to load destinations. Please try again later.');
+        const errorMessage = 'Failed to load destinations. Please try again later.';
+        setError(errorMessage);
+        showError(errorMessage, 'Loading Error');
         // Fallback to mock data in case of any error
         setPopularLocations(getMockLocations());
       } finally {
@@ -101,7 +105,7 @@ const HomePage: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [showError]);
 
   // Helper function for mock data
   const getMockLocations = (): Location[] => [

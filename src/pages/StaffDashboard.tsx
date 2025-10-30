@@ -70,7 +70,7 @@ const StaffDashboard: React.FC = () => {
       title: 'User Management',
       description: 'Manage user accounts and permissions',
       icon: <Users size={24} />,
-      link: '/staff/users',
+      link: '/admin/users',
       color: 'primary'
     },
     {
