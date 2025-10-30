@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Instagram, Mail, Phone, MapPin } from 'lucide-react';
 import Logo from '../assets/LogoVietGo_WhiteBG.png';
 
 const Footer: React.FC = () => {
@@ -34,11 +34,13 @@ const Footer: React.FC = () => {
               <a href="https://www.facebook.com/profile.php?id=61581639685084" target="_blank" rel="noopener noreferrer" className="text-white" style={{ fontSize: '1.5rem' }}>
                 <Facebook />
               </a>
-              <a href="https://www.instagram.com/vietgo_2025/?__coig_challenged=1" target="_blank" rel="noopener noreferrer" className="text-white" style={{ fontSize: '1.5rem' }}>
+              <a href="https://www.instagram.com/vietgo_/" target="_blank" rel="noopener noreferrer" className="text-white" style={{ fontSize: '1.5rem' }}>
                 <Instagram />
               </a>
-              <a href="#" className="text-white" style={{ fontSize: '1.5rem' }}>
-                <Twitter />
+              <a href="https://www.tiktok.com/@vietgo_goldentiger" target="_blank" rel="noopener noreferrer" className="text-white" style={{ fontSize: '1.5rem' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M19.321 5.562a5.124 5.124 0 0 1-.443-.258 6.228 6.228 0 0 1-1.137-.966c-.849-.984-1.273-2.033-1.295-3.2h-.003c-.018-.93-.014-.93-.014-1.128h-3.59v12.577c0 .268-.01.535-.029.8-.177 2.284-2.05 4.1-4.358 4.1-2.388 0-4.316-1.928-4.316-4.316 0-2.388 1.928-4.316 4.316-4.316.44 0 .863.066 1.262.188v-3.649c-.42-.06-.85-.091-1.286-.091-4.142 0-7.5 3.358-7.5 7.5s3.358 7.5 7.5 7.5c4.142 0 7.5-3.358 7.5-7.5V8.424a9.448 9.448 0 0 0 5.527 1.758V6.693a5.765 5.765 0 0 1-2.134-1.131z"/>
+                </svg>
               </a>
             </div>
           </Col>
