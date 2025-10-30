@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Form, Button, Alert, Row, Col, Spinner } from 'react-bootstrap';
 import { Calendar, Clock, MapPin, DollarSign, CheckCircle } from 'lucide-react';
 import { tourGuideBookingService } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import type { TourGuideDto, CreateTourGuideBookingDto } from '../services/api';
 
 interface BookingModalProps {
@@ -12,6 +13,7 @@ interface BookingModalProps {
 }
 
 const BookingModal: React.FC<BookingModalProps> = ({ show, onHide, tourGuide, onBookingSuccess }) => {
+  const { showError, showSuccess } = useAuth();
   const [formData, setFormData] = useState<CreateTourGuideBookingDto>({
     tourGuideId: 0,
     startDate: '',
@@ -65,17 +67,30 @@ const BookingModal: React.FC<BookingModalProps> = ({ show, onHide, tourGuide, on
     setLoading(true);
 
     try {
+      // Basic validation
+      if (!formData.startDate || !formData.endDate || !formData.location) {
+        const errorMessage = 'Please fill in all required fields.';
+        setError(errorMessage);
+        showError(errorMessage, 'Validation Error');
+        return;
+      }
       // Validate dates
       const startDate = new Date(formData.startDate);
       const endDate = new Date(formData.endDate);
       const now = new Date();
 
       if (startDate <= now) {
-        throw new Error('Start date must be in the future');
+        const errorMessage = 'Start date must be in the future';
+        setError(errorMessage);
+        showError(errorMessage, 'Invalid Date');
+        return;
       }
 
       if (endDate <= startDate) {
-        throw new Error('End date must be after start date');
+        const errorMessage = 'End date must be after start date';
+        setError(errorMessage);
+        showError(errorMessage, 'Invalid Date Range');
+        return;
       }
 
       await tourGuideBookingService.create({
@@ -85,7 +100,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ show, onHide, tourGuide, on
       });
 
       // Show success message
+      const successMessage = `Booking confirmed for ${tourGuide?.name}! You will receive a confirmation email shortly.`;
       setSuccess(true);
+      showSuccess(successMessage, 'Booking Successful');
       
       // Auto-hide after 3 seconds
       setTimeout(() => {
@@ -104,15 +121,50 @@ const BookingModal: React.FC<BookingModalProps> = ({ show, onHide, tourGuide, on
       }, 3000);
     } catch (err) {
       let errorMessage = 'Booking failed. Please try again.';
+      
+      // Handle different types of errors
       if (err && typeof err === 'object' && 'response' in err) {
-        const response = (err as { response?: { data?: { message?: string } } }).response;
-        if (response?.data?.message) {
-          errorMessage = response.data.message;
+        const axiosErr = err as { response?: { data?: { message?: string }; status?: number } };
+        
+        // Check server message for availability issues first
+        const serverMessage = axiosErr.response?.data?.message?.toLowerCase() || '';
+        const isAvailabilityError = serverMessage.includes('not available') || 
+                                  serverMessage.includes('unavailable') || 
+                                  serverMessage.includes('already booked') ||
+                                  serverMessage.includes('time slot') ||
+                                  serverMessage.includes('schedule conflict') ||
+                                  serverMessage.includes('booking conflict') ||
+                                  serverMessage.includes('date conflict');
+        
+        if (isAvailabilityError) {
+          errorMessage = 'Tour guide is not available for the selected dates. Please choose different dates or times.';
+        } else if (axiosErr.response?.status === 409) {
+          errorMessage = 'Tour guide is not available for the selected dates. Please choose different dates or times.';
+        } else if (axiosErr.response?.status === 422) {
+          errorMessage = 'Tour guide is not available for the selected dates. Please choose different dates or times.';
+        } else if (axiosErr.response?.status === 400) {
+          // For 400 errors, assume it's likely an availability issue unless we have a specific message
+          if (axiosErr.response?.data?.message) {
+            errorMessage = axiosErr.response.data.message;
+          } else {
+            errorMessage = 'Tour guide is not available for the selected dates. Please choose different dates or times.';
+          }
+        } else if (axiosErr.response?.data?.message) {
+          errorMessage = axiosErr.response.data.message;
         }
       } else if (err instanceof Error) {
-        errorMessage = err.message;
+        const errorMsg = err.message.toLowerCase();
+        if (errorMsg.includes('not available') || 
+            errorMsg.includes('unavailable') || 
+            errorMsg.includes('already booked')) {
+          errorMessage = 'Tour guide is not available for the selected dates. Please choose different dates or times.';
+        } else {
+          errorMessage = err.message;
+        }
       }
+      
       setError(errorMessage);
+      showError(errorMessage, 'Booking Failed');
     } finally {
       setLoading(false);
     }

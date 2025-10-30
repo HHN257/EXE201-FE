@@ -1,6 +1,44 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
 import type { User } from '../types';
 import { apiService } from '../services/api';
+
+/**
+ * NOTIFICATION SYSTEM USAGE:
+ * 
+ * This AuthContext now includes a global notification system.
+ * To use notifications in any component:
+ * 
+ * 1. Import and use the hook:
+ *    const { showError, showSuccess, showWarning, showInfo } = useAuth();
+ * 
+ * 2. Call the appropriate function:
+ *    showError('Something went wrong!', 'Error Title');
+ *    showSuccess('Operation completed!', 'Success');
+ *    showWarning('Please check your input', 'Warning');
+ *    showInfo('Here is some information', 'Info');
+ * 
+ * 3. The notifications will automatically appear as toast notifications
+ *    at the top-right corner of the screen and auto-close after a few seconds.
+ * 
+ * Available functions:
+ * - showError(message, title?) - Shows red error toast (7 seconds duration)
+ * - showSuccess(message, title?) - Shows green success toast (4 seconds duration)  
+ * - showWarning(message, title?) - Shows yellow warning toast (5 seconds duration)
+ * - showInfo(message, title?) - Shows blue info toast (4 seconds duration)
+ * - removeNotification(id) - Manually remove a specific notification
+ * - clearAllNotifications() - Remove all notifications
+ */
+
+export type NotificationType = 'success' | 'error' | 'warning' | 'info';
+
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  title?: string;
+  message: string;
+  autoClose?: boolean;
+  duration?: number;
+}
 
 interface AuthState {
   user: User | null;
@@ -15,6 +53,14 @@ interface AuthContextType extends AuthState {
   logout: () => void;
   getRoleBasedDashboard: () => string;
   getLoginRedirect: (role?: string) => string;
+  // Notification functions
+  notifications: Notification[];
+  showError: (message: string, title?: string) => void;
+  showSuccess: (message: string, title?: string) => void;
+  showWarning: (message: string, title?: string) => void;
+  showInfo: (message: string, title?: string) => void;
+  removeNotification: (id: string) => void;
+  clearAllNotifications: () => void;
 }
 
 interface RegisterData {
@@ -88,6 +134,73 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  // Notification functions
+  const generateId = () => `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+  const showNotification = (notification: Omit<Notification, 'id'>) => {
+    const id = generateId();
+    const newNotification: Notification = {
+      id,
+      autoClose: true,
+      duration: 5000,
+      ...notification,
+    };
+
+    setNotifications(prev => [...prev, newNotification]);
+
+    // Auto-remove if autoClose is true
+    if (newNotification.autoClose && newNotification.duration) {
+      setTimeout(() => {
+        removeNotification(id);
+      }, newNotification.duration);
+    }
+  };
+
+  const showError = (message: string, title?: string) => {
+    showNotification({
+      type: 'error',
+      title: title || 'Error',
+      message,
+      duration: 7000,
+    });
+  };
+
+  const showSuccess = (message: string, title?: string) => {
+    showNotification({
+      type: 'success',
+      title: title || 'Success',
+      message,
+      duration: 4000,
+    });
+  };
+
+  const showWarning = (message: string, title?: string) => {
+    showNotification({
+      type: 'warning',
+      title: title || 'Warning',
+      message,
+      duration: 5000,
+    });
+  };
+
+  const showInfo = (message: string, title?: string) => {
+    showNotification({
+      type: 'info',
+      title: title || 'Information',
+      message,
+      duration: 4000,
+    });
+  };
+
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  };
+
+  const clearAllNotifications = () => {
+    setNotifications([]);
+  };
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -262,7 +375,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout, getRoleBasedDashboard, getLoginRedirect }}>
+    <AuthContext.Provider value={{ 
+      ...state, 
+      login, 
+      register, 
+      logout, 
+      getRoleBasedDashboard, 
+      getLoginRedirect,
+      notifications,
+      showError,
+      showSuccess,
+      showWarning,
+      showInfo,
+      removeNotification,
+      clearAllNotifications
+    }}>
       {children}
     </AuthContext.Provider>
   );

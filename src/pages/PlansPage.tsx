@@ -17,7 +17,7 @@ const PlansPage: React.FC = () => {
   const [showQRModal, setShowQRModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [paymentResult, setPaymentResult] = useState<PaymentResult | null>(null);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, showError, showSuccess } = useAuth();
 
   useEffect(() => {
     fetchPlans();
@@ -32,7 +32,9 @@ const PlansPage: React.FC = () => {
       setPlans(data);
     } catch (error) {
       console.error('Error fetching plans:', error);
-      setError('Failed to load plans. Please try again.');
+      const errorMessage = 'Failed to load plans. Please try again.';
+      setError(errorMessage);
+      showError(errorMessage, 'Loading Error');
     } finally {
       setLoading(false);
     }
@@ -52,13 +54,17 @@ const PlansPage: React.FC = () => {
 
   const handleSubscribe = (plan: Plan) => {
     if (!isAuthenticated) {
-      setError('Please log in to subscribe to a plan.');
+      const errorMessage = 'Please log in to subscribe to a plan.';
+      setError(errorMessage);
+      showError(errorMessage, 'Authentication Required');
       return;
     }
 
     // Check if user already has an active subscription to this plan
     if (isUserSubscribedToPlan(plan)) {
-      setError('You are already subscribed to this plan.');
+      const errorMessage = 'You are already subscribed to this plan.';
+      setError(errorMessage);
+      showError(errorMessage, 'Already Subscribed');
       return;
     }
     
@@ -80,6 +86,7 @@ const PlansPage: React.FC = () => {
 
       setPaymentResult(result);
       setShowQRModal(true);
+      showSuccess(`Payment initiated for ${selectedPlan.name} plan. Please scan the QR code to complete payment.`, 'Payment Started');
       
       // Refresh current subscription after successful payment initiation
       if (isAuthenticated) {

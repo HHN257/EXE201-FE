@@ -20,7 +20,7 @@ const RegisterPage = () => {
   const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
   const [isLoading, setIsLoading] = useState(false);
   
-  const { register } = useAuth();
+  const { register, showError, showSuccess } = useAuth();
   const navigate = useNavigate();
 
   const validateField = (name: string, value: string) => {
@@ -126,7 +126,9 @@ const RegisterPage = () => {
 
     if (Object.keys(allErrors).length > 0) {
       setFieldErrors(allErrors);
-      setError('Please fix the errors below');
+      const errorMessage = 'Please fix the errors below';
+      setError(errorMessage);
+      showError(errorMessage, 'Validation Error');
       return;
     }
 
@@ -142,6 +144,7 @@ const RegisterPage = () => {
         password: formData.password,
         confirmPassword: formData.confirmPassword
       });
+      showSuccess('Registration successful! Welcome to SmartTravel.');
       navigate(redirectTo);
     } catch (err) {
       let errorMessage = 'Registration failed. Please try again.';
@@ -151,6 +154,7 @@ const RegisterPage = () => {
           errorMessage = response.data.message;
         }
       }
+      showError(errorMessage, 'Registration Failed');
       setError(errorMessage);
     } finally {
       setIsLoading(false);

@@ -6,7 +6,7 @@ import { apiService } from '../services/api';
 import type { UpdateTourGuideDto, TourGuideDto } from '../services/api';
 
 const TourGuideProfilePage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, showError, showSuccess } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -36,11 +36,15 @@ const TourGuideProfilePage: React.FC = () => {
         setError('');
         
         if (!user?.id) {
-          setError('User information not available.');
+          const errorMessage = 'User information not available.';
+          setError(errorMessage);
+          showError(errorMessage, 'Authentication Error');
           return;
         }
         
-        const profileData = await apiService.getTourGuideByUserId(user.id);
+        // Use the new my-profile endpoint that maps user to tour guide by email
+        const profileData = await apiService.getCurrentTourGuide();
+        
         setProfile(profileData);
         setFormData({
           name: profileData.name || '',
@@ -54,7 +58,22 @@ const TourGuideProfilePage: React.FC = () => {
           isActive: true // Default to true
         });
       } catch (err) {
-        setError('Failed to load profile. Please try again.');
+        let errorMessage = 'Failed to load profile. Please try again.';
+        
+        // Provide more specific error messages based on the error response
+        if (err && typeof err === 'object' && 'response' in err) {
+          const axiosErr = err as { response?: { status?: number; data?: { message?: string } } };
+          if (axiosErr.response?.status === 404) {
+            errorMessage = 'Tour guide profile not found. You may need to register as a tour guide first.';
+          } else if (axiosErr.response?.status === 401) {
+            errorMessage = 'Authentication expired. Please log in again.';
+          } else if (axiosErr.response?.data?.message) {
+            errorMessage = axiosErr.response.data.message;
+          }
+        }
+        
+        setError(errorMessage);
+        showError(errorMessage, 'Profile Loading Error');
         console.error('Error loading profile:', err);
       } finally {
         setIsLoading(false);
@@ -62,7 +81,7 @@ const TourGuideProfilePage: React.FC = () => {
     };
 
     loadProfile();
-  }, [user?.id]);
+  }, [user?.id, showError]);
 
   const handleInputChange = (field: keyof typeof formData, value: string | number | boolean) => {
     setFormData(prev => ({
@@ -132,6 +151,21 @@ const TourGuideProfilePage: React.FC = () => {
       setError('');
       setSuccess('');
 
+      // Validation
+      if (!formData.name.trim()) {
+        const errorMessage = 'Name is required.';
+        setError(errorMessage);
+        showError(errorMessage, 'Validation Error');
+        return;
+      }
+
+      if (formData.hourlyRate < 0) {
+        const errorMessage = 'Hourly rate cannot be negative.';
+        setError(errorMessage);
+        showError(errorMessage, 'Validation Error');
+        return;
+      }
+
       const updateData: UpdateTourGuideDto = {
         name: formData.name,
         bio: formData.bio,
@@ -153,12 +187,32 @@ const TourGuideProfilePage: React.FC = () => {
         setProfile(updatedProfile);
         setSelectedImage(null);
         setImagePreview(null);
-        setSuccess('Profile updated successfully!');
+        const successMessage = 'Profile updated successfully!';
+        setSuccess(successMessage);
+        showSuccess(successMessage, 'Profile Updated');
+      } else {
+        const errorMessage = 'No profile ID found. Cannot update profile.';
+        setError(errorMessage);
+        showError(errorMessage, 'Update Error');
+        return;
       }
       
       setIsEditing(false);
     } catch (err) {
-      setError('Failed to update profile. Please try again.');
+      let errorMessage = 'Failed to update profile. Please try again.';
+      
+      // Handle Axios errors with proper typing
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosErr = err as { response?: { data?: { message?: string } }; message?: string };
+        if (axiosErr.response?.data?.message) {
+          errorMessage = axiosErr.response.data.message;
+        } else if (axiosErr.message) {
+          errorMessage = axiosErr.message;
+        }
+      }
+      
+      setError(errorMessage);
+      showError(errorMessage, 'Update Failed');
       console.error('Error updating profile:', err);
     } finally {
       setIsSaving(false);

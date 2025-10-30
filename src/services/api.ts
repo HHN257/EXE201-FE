@@ -324,7 +324,7 @@ export const apiService = {
     api.get(`/tourguides/${userId}`).then(res => res.data),
 
   getCurrentTourGuide: (): Promise<TourGuideDto> =>
-    api.get('/tourguides/current').then(res => res.data),
+    api.get('/tourguides/my-profile').then(res => res.data),
 
   updateTourGuide: async (id: number, tourGuideData: UpdateTourGuideDto): Promise<TourGuideDto> => {
     const formData = new FormData();
