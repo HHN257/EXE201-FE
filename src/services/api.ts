@@ -20,7 +20,8 @@ import type {
   UpdatePlanDto,
   Subscription,
   CreateSubscriptionRequestDto,
-  PaymentResult
+  PaymentResult,
+  BookingWithPaymentResponse
 } from '../types';
 import { config } from '../config';
 
@@ -433,7 +434,7 @@ export const tourGuideBookingService = {
     api.get(`/tourguidebookings/${id}`).then(res => res.data),
 
   // Create new booking
-  create: (data: CreateTourGuideBookingDto): Promise<TourGuideBookingDto> =>
+  create: (data: CreateTourGuideBookingDto): Promise<BookingWithPaymentResponse> =>
     api.post('/tourguidebookings', data).then(res => res.data),
 
   // Get bookings for a tour guide

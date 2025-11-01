@@ -225,6 +225,22 @@ export interface PaymentResult {
   status?: string;
 }
 
+// Tour Guide Booking with Payment Response
+export interface BookingWithPaymentResponse {
+  booking: {
+    id: number;
+    startDate: string;
+    endDate: string;
+    totalPrice: number;
+    paymentAmount: number;
+    currency: string;
+    status: string;
+    tourGuideName: string;
+    orderCode: number;
+  };
+  payment: PaymentResult;
+}
+
 // Chatbot Types
 export interface ChatMessage {
   message: string;

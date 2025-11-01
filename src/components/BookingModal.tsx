@@ -4,6 +4,8 @@ import { Calendar, Clock, MapPin, DollarSign, CheckCircle } from 'lucide-react';
 import { tourGuideBookingService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import type { TourGuideDto, CreateTourGuideBookingDto } from '../services/api';
+import type { BookingWithPaymentResponse } from '../types';
+import BookingQRPaymentModal from './BookingQRPaymentModal';
 
 interface BookingModalProps {
   show: boolean;
@@ -24,6 +26,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ show, onHide, tourGuide, on
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [bookingResult, setBookingResult] = useState<BookingWithPaymentResponse | null>(null);
 
   React.useEffect(() => {
     if (tourGuide) {
@@ -37,6 +41,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ show, onHide, tourGuide, on
   const handleModalClose = () => {
     setError(null);
     setSuccess(false);
+    setBookingResult(null);
+    setShowQRModal(false);
     onHide();
   };
 
@@ -93,32 +99,28 @@ const BookingModal: React.FC<BookingModalProps> = ({ show, onHide, tourGuide, on
         return;
       }
 
-      await tourGuideBookingService.create({
+      const result = await tourGuideBookingService.create({
         ...formData,
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString()
       });
 
-      // Show success message
-      const successMessage = `Booking confirmed for ${tourGuide?.name}! You will receive a confirmation email shortly.`;
-      setSuccess(true);
-      showSuccess(successMessage, 'Booking Successful');
+      // Store booking result and show QR payment modal
+      setBookingResult(result);
+      setShowQRModal(true);
       
-      // Auto-hide after 3 seconds
-      setTimeout(() => {
-        setSuccess(false);
-        onBookingSuccess?.();
-        onHide();
-        
-        // Reset form
-        setFormData({
-          tourGuideId: tourGuide?.id || 0,
-          startDate: '',
-          endDate: '',
-          notes: '',
-          location: ''
-        });
-      }, 3000);
+      // Show success message for booking creation
+      const successMessage = `Booking initiated for ${tourGuide?.name}! Please complete the payment to confirm your booking.`;
+      showSuccess(successMessage, 'Booking Created');
+      
+      // Reset form but keep modal open for payment
+      setFormData({
+        tourGuideId: tourGuide?.id || 0,
+        startDate: '',
+        endDate: '',
+        notes: '',
+        location: ''
+      });
     } catch (err) {
       let errorMessage = 'Booking failed. Please try again.';
       
@@ -196,7 +198,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ show, onHide, tourGuide, on
               <CheckCircle size={20} className="me-2" />
               <div>
                 <strong>Booking Confirmed!</strong>
-                <div className="small">Your tour guide booking has been successfully created. You will receive a confirmation email shortly.</div>
+                <div className="small">Your tour guide booking has been successfully created.</div>
               </div>
             </Alert>
           )}
@@ -288,13 +290,24 @@ const BookingModal: React.FC<BookingModalProps> = ({ show, onHide, tourGuide, on
             <div className="border rounded p-3 bg-primary bg-opacity-10">
               <h6 className="mb-2">Booking Summary</h6>
               <Row>
-                <Col>
+                <Col md={6}>
                   <strong>Total Duration:</strong> {Math.round(calculateTotalPrice() / (tourGuide?.hourlyRate || 1))} hours
                 </Col>
-                <Col>
+                <Col md={6}>
                   <strong>Total Price:</strong> {formatPrice(totalPrice)}
                 </Col>
+                <Col md={6} className="mt-2">
+                  <strong>Upfront Payment:</strong> {formatPrice(totalPrice / 2)}
+                </Col>
+                <Col md={6} className="mt-2">
+                  <strong>Remaining:</strong> {formatPrice(totalPrice / 2)}
+                </Col>
               </Row>
+              <div className="mt-2">
+                <small className="text-muted">
+                  * You'll pay 50% upfront to confirm the booking. The remaining 50% is paid after the tour.
+                </small>
+              </div>
             </div>
           )}
         </Modal.Body>
@@ -319,11 +332,25 @@ const BookingModal: React.FC<BookingModalProps> = ({ show, onHide, tourGuide, on
                 Booking Confirmed!
               </>
             ) : (
-              'Confirm Booking'
+              'Book & Proceed to Payment'
             )}
           </Button>
         </Modal.Footer>
       </Form>
+
+      {/* QR Payment Modal */}
+      <BookingQRPaymentModal
+        show={showQRModal}
+        onHide={() => {
+          setShowQRModal(false);
+          setBookingResult(null);
+          // Optionally call onBookingSuccess when payment modal closes
+          onBookingSuccess?.();
+          // Close the main booking modal as well since booking is created
+          handleModalClose();
+        }}
+        bookingResult={bookingResult}
+      />
     </Modal>
   );
 };
